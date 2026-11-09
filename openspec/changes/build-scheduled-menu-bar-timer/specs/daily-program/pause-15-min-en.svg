@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="300" viewBox="0 0 1440 300" role="img" aria-label="Actual and planned workday with a one-hour lunch and a 15-minute pause">
+<rect width="1440" height="300" rx="16" fill="#f8fafc"/>
+<g font-family="system-ui,sans-serif" fill="#172338">
+<text x="24.0" y="34" font-size="23" font-weight="700">Workday with a one-hour lunch</text>
+<text x="24.0" y="61" font-size="15" >Focus 40 min · Break 20 min · Lunch B4 60 min · Workday ends at 18:00</text>
+<path d="M90.0 100V229" stroke="#cbd5e1" stroke-dasharray="3 4"/>
+<text x="90.0" y="93" font-size="13" text-anchor="middle" fill="#ad3442">09:00</text>
+<path d="M222.0 100V229" stroke="#cbd5e1" stroke-dasharray="3 4"/>
+<text x="222.0" y="93" font-size="13" text-anchor="middle" fill="#172338">10:00</text>
+<path d="M354.0 100V229" stroke="#cbd5e1" stroke-dasharray="3 4"/>
+<text x="354.0" y="93" font-size="13" text-anchor="middle" fill="#172338">11:00</text>
+<path d="M486.0 100V229" stroke="#cbd5e1" stroke-dasharray="3 4"/>
+<text x="486.0" y="93" font-size="13" text-anchor="middle" fill="#172338">12:00</text>
+<path d="M618.0 100V229" stroke="#cbd5e1" stroke-dasharray="3 4"/>
+<text x="618.0" y="93" font-size="13" text-anchor="middle" fill="#172338">13:00</text>
+<path d="M750.0 100V229" stroke="#cbd5e1" stroke-dasharray="3 4"/>
+<text x="750.0" y="93" font-size="13" text-anchor="middle" fill="#172338">14:00</text>
+<path d="M882.0 100V229" stroke="#cbd5e1" stroke-dasharray="3 4"/>
+<text x="882.0" y="93" font-size="13" text-anchor="middle" fill="#172338">15:00</text>
+<path d="M1014.0 100V229" stroke="#cbd5e1" stroke-dasharray="3 4"/>
+<text x="1014.0" y="93" font-size="13" text-anchor="middle" fill="#172338">16:00</text>
+<path d="M1146.0 100V229" stroke="#cbd5e1" stroke-dasharray="3 4"/>
+<text x="1146.0" y="93" font-size="13" text-anchor="middle" fill="#172338">17:00</text>
+<path d="M1278.0 100V229" stroke="#cbd5e1" stroke-dasharray="3 4"/>
+<text x="1278.0" y="93" font-size="13" text-anchor="middle" fill="#ad3442">18:00</text>
+<text x="24.0" y="145" font-size="16" font-weight="700">Actual</text>
+<rect x="90.0" y="122" width="88.0" height="36" rx="4" fill="#2359a8" />
+<text x="134.0" y="145" font-size="12" text-anchor="middle" fill="#fff">Focus 1</text>
+<rect x="178.0" y="122" width="44.0" height="36" rx="4" fill="#146d5a" />
+<text x="200.0" y="145" font-size="12" text-anchor="middle" fill="#fff">B1</text>
+<rect x="222.0" y="122" width="88.0" height="36" rx="4" fill="#2359a8" />
+<text x="266.0" y="145" font-size="12" text-anchor="middle" fill="#fff">Focus 2</text>
+<rect x="310.0" y="122" width="44.0" height="36" rx="4" fill="#146d5a" />
+<text x="332.0" y="145" font-size="12" text-anchor="middle" fill="#fff">B2</text>
+<rect x="354.0" y="122" width="88.0" height="36" rx="4" fill="#2359a8" />
+<text x="398.0" y="145" font-size="12" text-anchor="middle" fill="#fff">Focus 3</text>
+<rect x="442.0" y="122" width="44.0" height="36" rx="4" fill="#146d5a" />
+<text x="464.0" y="145" font-size="12" text-anchor="middle" fill="#fff">B3</text>
+<rect x="486.0" y="122" width="88.0" height="36" rx="4" fill="#2359a8" />
+<text x="530.0" y="145" font-size="12" text-anchor="middle" fill="#fff">Focus 4</text>
+<rect x="574.0" y="122" width="132.0" height="36" rx="4" fill="#146d5a" />
+<text x="640.0" y="145" font-size="12" text-anchor="middle" fill="#fff">Lunch B4 · 60 min</text>
+<rect x="706.0" y="122" width="88.0" height="36" rx="4" fill="#2359a8" />
+<text x="750.0" y="145" font-size="12" text-anchor="middle" fill="#fff">Focus 5</text>
+<rect x="794.0" y="122" width="44.0" height="36" rx="4" fill="#146d5a" />
+<text x="816.0" y="145" font-size="12" text-anchor="middle" fill="#fff">B5</text>
+<rect x="838.0" y="122" width="88.0" height="36" rx="4" fill="#2359a8" />
+<text x="882.0" y="145" font-size="12" text-anchor="middle" fill="#fff">Focus 6</text>
+<rect x="926.0" y="122" width="44.0" height="36" rx="4" fill="#146d5a" />
+<text x="948.0" y="145" font-size="12" text-anchor="middle" fill="#fff">B6</text>
+<rect x="970.0" y="122" width="88.0" height="36" rx="4" fill="#2359a8" />
+<text x="1014.0" y="145" font-size="12" text-anchor="middle" fill="#fff">Focus 7</text>
+<rect x="1058.0" y="122" width="44.0" height="36" rx="4" fill="#146d5a" />
+<text x="1080.0" y="145" font-size="12" text-anchor="middle" fill="#fff">B7</text>
+<rect x="1102.0" y="122" width="44.0" height="36" rx="4" fill="#2359a8" />
+<rect x="1146.0" y="122" width="33.0" height="36" rx="4" fill="#f9d682" />
+<text x="1162.5" y="145" font-size="12" text-anchor="middle" fill="#402b00">P1</text>
+<rect x="1179.0" y="122" width="44.0" height="36" rx="4" fill="#2359a8" />
+<text x="1162.5" y="115" font-size="12" text-anchor="middle" fill="#172338">Focus 8 · 40 min</text>
+<rect x="1223.0" y="122" width="44.0" height="36" rx="4" fill="#146d5a" />
+<text x="1245.0" y="145" font-size="12" text-anchor="middle" fill="#fff">B8</text>
+<rect x="1267.0" y="122" width="88.0" height="36" rx="4" fill="#f8fafc" stroke="#2359a8" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="1311.0" y="145" font-size="12" text-anchor="middle" fill="#2359a8">Focus 9</text>
+<text x="24.0" y="204" font-size="16" font-weight="700">Plan</text>
+<rect x="90.0" y="181" width="88.0" height="36" rx="4" fill="#2359a8" />
+<text x="134.0" y="204" font-size="12" text-anchor="middle" fill="#fff">Focus 1</text>
+<rect x="178.0" y="181" width="44.0" height="36" rx="4" fill="#146d5a" />
+<text x="200.0" y="204" font-size="12" text-anchor="middle" fill="#fff">B1</text>
+<rect x="222.0" y="181" width="88.0" height="36" rx="4" fill="#2359a8" />
+<text x="266.0" y="204" font-size="12" text-anchor="middle" fill="#fff">Focus 2</text>
+<rect x="310.0" y="181" width="44.0" height="36" rx="4" fill="#146d5a" />
+<text x="332.0" y="204" font-size="12" text-anchor="middle" fill="#fff">B2</text>
+<rect x="354.0" y="181" width="88.0" height="36" rx="4" fill="#2359a8" />
+<text x="398.0" y="204" font-size="12" text-anchor="middle" fill="#fff">Focus 3</text>
+<rect x="442.0" y="181" width="44.0" height="36" rx="4" fill="#146d5a" />
+<text x="464.0" y="204" font-size="12" text-anchor="middle" fill="#fff">B3</text>
+<rect x="486.0" y="181" width="88.0" height="36" rx="4" fill="#2359a8" />
+<text x="530.0" y="204" font-size="12" text-anchor="middle" fill="#fff">Focus 4</text>
+<rect x="574.0" y="181" width="132.0" height="36" rx="4" fill="#146d5a" />
+<text x="640.0" y="204" font-size="12" text-anchor="middle" fill="#fff">Lunch B4 · 60 min</text>
+<rect x="706.0" y="181" width="88.0" height="36" rx="4" fill="#2359a8" />
+<text x="750.0" y="204" font-size="12" text-anchor="middle" fill="#fff">Focus 5</text>
+<rect x="794.0" y="181" width="44.0" height="36" rx="4" fill="#146d5a" />
+<text x="816.0" y="204" font-size="12" text-anchor="middle" fill="#fff">B5</text>
+<rect x="838.0" y="181" width="88.0" height="36" rx="4" fill="#2359a8" />
+<text x="882.0" y="204" font-size="12" text-anchor="middle" fill="#fff">Focus 6</text>
+<rect x="926.0" y="181" width="44.0" height="36" rx="4" fill="#146d5a" />
+<text x="948.0" y="204" font-size="12" text-anchor="middle" fill="#fff">B6</text>
+<rect x="970.0" y="181" width="88.0" height="36" rx="4" fill="#2359a8" />
+<text x="1014.0" y="204" font-size="12" text-anchor="middle" fill="#fff">Focus 7</text>
+<rect x="1058.0" y="181" width="44.0" height="36" rx="4" fill="#146d5a" />
+<text x="1080.0" y="204" font-size="12" text-anchor="middle" fill="#fff">B7</text>
+<rect x="1102.0" y="181" width="88.0" height="36" rx="4" fill="#2359a8" />
+<text x="1146.0" y="204" font-size="12" text-anchor="middle" fill="#fff">Focus 8</text>
+<rect x="1190.0" y="181" width="44.0" height="36" rx="4" fill="#146d5a" />
+<text x="1212.0" y="204" font-size="12" text-anchor="middle" fill="#fff">B8</text>
+<rect x="1234.0" y="181" width="88.0" height="36" rx="4" fill="#2359a8" />
+<text x="1278.0" y="204" font-size="12" text-anchor="middle" fill="#fff">Focus 9</text>
+<rect x="1322.0" y="181" width="44.0" height="36" rx="4" fill="#146d5a" />
+<text x="1344.0" y="204" font-size="12" text-anchor="middle" fill="#fff">B9</text>
+<path d="M90.0 100V229 M1278.0 100V229" stroke="#ad3442" stroke-width="2"/>
+<text x="1355.0" y="115" font-size="12" text-anchor="middle" fill="#172338">18:35</text>
+<text x="24.0" y="253" font-size="14" >B4 is lunch from 12:40 to 13:40. P1 is a pause from 17:00 to 17:15 during Focus 8.</text>
+<text x="24.0" y="277" font-size="14" >The dashed bar shows all of Focus 9, from 17:55 to 18:35. It is skipped because it does not fit before 18:00.</text>
+</g></svg>
