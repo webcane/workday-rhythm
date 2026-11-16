@@ -28,7 +28,8 @@ public final class AppShell: NSObject, NSApplicationDelegate {
         item.button?.toolTip = "Workday Rhythm"
 
         let menu = NSMenu()
-        let settings = menu.addItem(withTitle: "Настройки", action: #selector(MenuCommands.showSettings), keyEquivalent: ",")
+        let settings = menu.addItem(
+            withTitle: "Настройки", action: #selector(MenuCommands.showSettings), keyEquivalent: ",")
         settings.target = menuCommands
         menu.addItem(.separator())
         let quit = menu.addItem(withTitle: "Выход", action: #selector(MenuCommands.quit), keyEquivalent: "q")
@@ -67,8 +68,9 @@ public final class AppShell: NSObject, NSApplicationDelegate {
         window.isReleasedWhenClosed = false
         let title = NSTextField(labelWithString: "Дневная программа")
         title.font = .preferredFont(forTextStyle: .headline)
-        let message = NSTextField(wrappingLabelWithString:
-            "Параметры дневной программы появятся на следующем этапе реализации.")
+        let message = NSTextField(
+            wrappingLabelWithString:
+                "Параметры дневной программы появятся на следующем этапе реализации.")
         message.textColor = .secondaryLabelColor
         let content = NSStackView(views: [title, message])
         content.orientation = .vertical

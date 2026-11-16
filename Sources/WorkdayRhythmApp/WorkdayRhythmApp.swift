@@ -1,8 +1,8 @@
 import AppKit
+import MacIntegration
 import Presentation
 import SessionCoordinator
 import SettingsStore
-import MacIntegration
 
 @main
 @MainActor

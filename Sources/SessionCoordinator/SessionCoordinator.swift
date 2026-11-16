@@ -1,7 +1,7 @@
-import Program
-import TimerEngine
-import SettingsStore
 import MacIntegration
+import Program
+import SettingsStore
+import TimerEngine
 
 /// Владеет компонентами сессии; команды таймера пока отсутствуют.
 @MainActor

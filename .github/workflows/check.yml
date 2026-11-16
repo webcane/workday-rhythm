@@ -1,0 +1,27 @@
+name: Проверка
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: macos-26
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+      HOMEBREW_NO_AUTO_UPDATE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Установить just
+        run: brew install just
+      - name: Проверить версии инструментов
+        run: |
+          test "$(xcodebuild -version | head -n 1)" = 'Xcode 26.6'
+          swift --version | grep -F 'Apple Swift version 6.3.3'
+          test "$(just --version)" = 'just 1.59.0'
+      - name: Проверить проект
+        run: just check
