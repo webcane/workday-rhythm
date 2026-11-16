@@ -16,5 +16,6 @@ let package = Package(
         .target(name: "Presentation", dependencies: ["SessionCoordinator"]),
         .executableTarget(name: "WorkdayRhythmApp", dependencies: ["Presentation", "SessionCoordinator", "SettingsStore", "MacIntegration"]),
         .testTarget(name: "ArchitectureTests"),
+        .testTarget(name: "PresentationTests", dependencies: ["Presentation"]),
     ]
 )

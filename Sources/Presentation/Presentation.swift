@@ -7,6 +7,10 @@ public final class AppShell: NSObject, NSApplicationDelegate {
     private let coordinator: SessionCoordinator
     private var statusItem: NSStatusItem?
     private var settingsWindow: NSWindow?
+    private lazy var menuCommands = MenuCommands(
+        showSettings: { [weak self] in self?.showSettings() },
+        quit: { NSApplication.shared.terminate(nil) }
+    )
 
     public init(coordinator: SessionCoordinator) {
         self.coordinator = coordinator
@@ -24,11 +28,11 @@ public final class AppShell: NSObject, NSApplicationDelegate {
         item.button?.toolTip = "Workday Rhythm"
 
         let menu = NSMenu()
-        let settings = menu.addItem(withTitle: "Настройки", action: #selector(showSettings), keyEquivalent: ",")
-        settings.target = self
+        let settings = menu.addItem(withTitle: "Настройки", action: #selector(MenuCommands.showSettings), keyEquivalent: ",")
+        settings.target = menuCommands
         menu.addItem(.separator())
-        let quit = menu.addItem(withTitle: "Выход", action: #selector(quit), keyEquivalent: "q")
-        quit.target = self
+        let quit = menu.addItem(withTitle: "Выход", action: #selector(MenuCommands.quit), keyEquivalent: "q")
+        quit.target = menuCommands
         item.menu = menu
         statusItem = item
     }
@@ -44,16 +48,12 @@ public final class AppShell: NSObject, NSApplicationDelegate {
         statusItem = nil
     }
 
-    @objc private func showSettings() {
+    private func showSettings() {
         if settingsWindow == nil {
             settingsWindow = makeSettingsWindow()
         }
         settingsWindow?.makeKeyAndOrderFront(nil)
         NSApplication.shared.activate(ignoringOtherApps: true)
-    }
-
-    @objc private func quit() {
-        NSApplication.shared.terminate(nil)
     }
 
     private func makeSettingsWindow() -> NSWindow {
