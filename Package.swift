@@ -14,7 +14,9 @@ let package = Package(
         .target(name: "MacIntegration"),
         .target(
             name: "SessionCoordinator", dependencies: ["Program", "TimerEngine", "SettingsStore", "MacIntegration"]),
-        .target(name: "Presentation", dependencies: ["SessionCoordinator"]),
+        .target(
+            name: "Presentation", dependencies: ["SessionCoordinator"],
+            exclude: ["DesignSystem/README.md"]),
         .executableTarget(
             name: "WorkdayRhythmApp",
             dependencies: ["Presentation", "SessionCoordinator", "SettingsStore", "MacIntegration"]),

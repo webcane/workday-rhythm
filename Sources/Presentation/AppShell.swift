@@ -1,9 +1,10 @@
 import AppKit
 import SessionCoordinator
+import SwiftUI
 
 /// Оболочка приложения; правила сессии остаются за границей координатора.
 @MainActor
-public final class AppShell: NSObject, NSApplicationDelegate {
+public final class AppShell: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private let coordinator: SessionCoordinator
     private var statusItem: NSStatusItem?
     private var settingsWindow: NSWindow?
@@ -51,41 +52,46 @@ public final class AppShell: NSObject, NSApplicationDelegate {
 
     private func showSettings() {
         if settingsWindow == nil {
-            settingsWindow = makeSettingsWindow()
+            settingsWindow = Self.makeSettingsWindow()
+            settingsWindow?.delegate = self
         }
         settingsWindow?.makeKeyAndOrderFront(nil)
         NSApplication.shared.activate(ignoringOtherApps: true)
     }
 
-    private func makeSettingsWindow() -> NSWindow {
+    public func windowDidChangeScreen(_ notification: Notification) {
+        guard let window = notification.object as? NSWindow, let screen = window.screen else { return }
+        Self.limitSettingsWindow(window, screenFrame: screen.visibleFrame)
+    }
+
+    static func makeSettingsWindow() -> NSWindow {
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 460, height: 200),
-            styleMask: [.titled, .closable, .miniaturizable],
+            contentRect: NSRect(x: 0, y: 0, width: 720, height: 300),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered,
             defer: false
         )
         window.title = "Настройки — Workday Rhythm"
         window.isReleasedWhenClosed = false
-        let title = NSTextField(labelWithString: "Дневная программа")
-        title.font = .preferredFont(forTextStyle: .headline)
-        let message = NSTextField(
-            wrappingLabelWithString:
-                "Параметры дневной программы появятся на следующем этапе реализации.")
-        message.textColor = .secondaryLabelColor
-        let content = NSStackView(views: [title, message])
-        content.orientation = .vertical
-        content.alignment = .leading
-        content.spacing = 12
-        content.translatesAutoresizingMaskIntoConstraints = false
-        if let view = window.contentView {
-            view.addSubview(content)
-            NSLayoutConstraint.activate([
-                content.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
-                content.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
-                content.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            ])
-        }
+        let content = NSHostingView(
+            rootView: SettingsPreviewView(cancel: { [weak window] in window?.close() }))
+        // Размер окна задаёт оболочка; высота содержимого доступна через ScrollView.
+        content.sizingOptions = []
+        window.contentView = content
+        let screenFrame = NSScreen.main?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
+        limitSettingsWindow(window, screenFrame: screenFrame)
         window.center()
         return window
+    }
+
+    static func limitSettingsWindow(_ window: NSWindow, screenFrame: NSRect) {
+        let height = floor(screenFrame.height / 3)
+        let titleBarHeight = window.frame.height - window.contentRect(forFrameRect: window.frame).height
+        window.contentMinSize = NSSize(width: 720, height: max(0, height - titleBarHeight))
+        window.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: height)
+        var frame = window.frame
+        frame.origin.y += frame.height - height
+        frame.size.height = height
+        window.setFrame(frame, display: false)
     }
 }
