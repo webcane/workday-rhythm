@@ -3,7 +3,7 @@
 ## Первые шаги
 
 1. Установите полный Xcode 26.6 со Swift 6.3.3 и завершите его первоначальную настройку. Нужны macOS 13+ и macOS SDK; для XCTest отдельного пакета Command Line Tools недостаточно.
-2. Установите `just` 1.59.0 через Homebrew: `brew install just`, затем проверьте `just --version`. При другой версии обновляйте локальный инструмент и CI согласованно.
+2. Для локальных команд установите `just` 1.59.0 через Homebrew: `brew install just`, затем проверьте `just --version`. CI не использует `just`.
 3. Откройте терминал в корне репозитория, рядом с `Package.swift`. Внешних Swift-пакетов нет.
 4. Выполните команды из следующего раздела: проверьте manifest, запустите общую проверку, затем приложение.
 5. Ознакомьтесь со [стилем Swift](code-style.md), [архитектурой](architecture.md) и [правилами тестирования](testing.md). Планируемые изменения находятся в `openspec/changes/`.
@@ -29,7 +29,7 @@ just check
 ./scripts/swift.sh run WorkdayRhythmApp
 ```
 
-`just check` последовательно выполняет строгий `swift-format` lint, проверку имён Swift-файлов, сборку и XCTest. Команда ничего не исправляет и останавливается при первой ошибке. Для автоматического исправления форматирования используйте `just fmt`, затем повторите `just check`. Отдельные рецепты `just lint`, `just names`, `just build` и `just test` удобны при локальной работе. Те же проверки запускаются в CI через `just check`.
+`just check` последовательно выполняет строгий `swift-format` lint, проверку имён Swift-файлов, сборку и XCTest. Команда ничего не исправляет и останавливается при первой ошибке. Для автоматического исправления форматирования используйте `just fmt`, затем повторите `just check`. Отдельные рецепты `just lint`, `just names`, `just build` и `just test` удобны при локальной работе. `just` используется только локально; CI запускает эти проверки прямыми командами `swift format lint --strict --recursive Package.swift Sources Tests`, `./scripts/check-names.sh`, `swift build` и `swift test`.
 
 Скрипт запускает Swift из выбранного Xcode. Если `xcode-select -p` указывает на Command Line Tools, он использует `/Applications/Xcode.app/Contents/Developer` только для текущей команды. Явный `DEVELOPER_DIR` имеет приоритет; для Xcode в другом каталоге задайте его самостоятельно. Скрипт не меняет глобальные настройки.
 
