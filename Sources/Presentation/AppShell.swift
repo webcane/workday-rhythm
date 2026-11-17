@@ -4,7 +4,7 @@ import SwiftUI
 
 /// Оболочка приложения; правила сессии остаются за границей координатора.
 @MainActor
-public final class AppShell: NSObject, NSApplicationDelegate, NSWindowDelegate {
+public final class AppShell: NSObject, NSApplicationDelegate {
     private let coordinator: SessionCoordinator
     private var statusItem: NSStatusItem?
     private var settingsWindow: NSWindow?
@@ -53,19 +53,13 @@ public final class AppShell: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private func showSettings() {
         if settingsWindow == nil {
             settingsWindow = Self.makeSettingsWindow()
-            settingsWindow?.delegate = self
         }
         settingsWindow?.makeKeyAndOrderFront(nil)
         NSApplication.shared.activate(ignoringOtherApps: true)
     }
 
-    public func windowDidChangeScreen(_ notification: Notification) {
-        guard let window = notification.object as? NSWindow, let screen = window.screen else { return }
-        Self.limitSettingsWindow(window, screenFrame: screen.visibleFrame)
-    }
-
-    static func makeSettingsWindow() -> NSWindow {
-        let window = NSWindow(
+    static func makeSettingsWindow() -> SettingsWindow {
+        let window = SettingsWindow(
             contentRect: NSRect(x: 0, y: 0, width: 720, height: 300),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered,
@@ -73,25 +67,16 @@ public final class AppShell: NSObject, NSApplicationDelegate, NSWindowDelegate {
         )
         window.title = "Настройки — Workday Rhythm"
         window.isReleasedWhenClosed = false
+        window.delegate = window
         let content = NSHostingView(
             rootView: SettingsPreviewView(cancel: { [weak window] in window?.close() }))
         // Размер окна задаёт оболочка; высота содержимого доступна через ScrollView.
         content.sizingOptions = []
         window.contentView = content
         let screenFrame = NSScreen.main?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
-        limitSettingsWindow(window, screenFrame: screenFrame)
+        window.updateSizeLimits(screenFrame: screenFrame)
         window.center()
         return window
     }
 
-    static func limitSettingsWindow(_ window: NSWindow, screenFrame: NSRect) {
-        let height = floor(screenFrame.height / 3)
-        let titleBarHeight = window.frame.height - window.contentRect(forFrameRect: window.frame).height
-        window.contentMinSize = NSSize(width: 720, height: max(0, height - titleBarHeight))
-        window.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: height)
-        var frame = window.frame
-        frame.origin.y += frame.height - height
-        frame.size.height = height
-        window.setFrame(frame, display: false)
-    }
 }

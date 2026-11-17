@@ -37,12 +37,42 @@ enum RulerScale: CaseIterable {
     }
 
     func hasLabel(at value: Int) -> Bool {
+        guard value >= 0 else { return false }
         if value == range.lowerBound || value == range.upperBound { return true }
         switch self {
-        case .startTime, .longBreak: return value.isMultiple(of: 60)
+        case .startTime: return value.isMultiple(of: 60)
+        case .longBreak: return value.isMultiple(of: 20)
         case .focus: return value.isMultiple(of: 30)
         case .rest: return (value - range.lowerBound).isMultiple(of: 10)
         }
+    }
+
+    func displayValues(around value: Int, visibleSteps: Int) -> [Int] {
+        let center = values[nearestIndex(to: value)]
+        let count = min(max(visibleSteps, 1), 200)
+        let lower = self == .startTime ? max(0, center - count * step) : center - count * step
+        let upper = self == .startTime ? min(1440, center + count * step) : center + count * step
+        // Привязка к рискам сохраняет исходный шаг и за пределами допустимого интервала.
+        let first = lower + (step - (lower - range.lowerBound) % step) % step
+        return Array(stride(from: first, through: upper, by: step))
+    }
+
+    func clampedTranslation(from value: Int, translation: Double, tickSpacing: Double) -> Double {
+        guard translation.isFinite, tickSpacing.isFinite, tickSpacing > 0 else { return 0 }
+        let index = Double(nearestIndex(to: value))
+        return min(max(translation, (index - Double(values.count - 1)) * tickSpacing), index * tickSpacing)
+    }
+
+    func value(afterDragging value: Int, translation: Double, tickSpacing: Double) -> Int {
+        let translation = clampedTranslation(from: value, translation: translation, tickSpacing: tickSpacing)
+        guard tickSpacing.isFinite, tickSpacing > 0 else { return values[nearestIndex(to: value)] }
+        let index = Double(nearestIndex(to: value)) - translation / tickSpacing
+        return values[min(max(Int(index.rounded()), 0), values.count - 1)]
+    }
+
+    func steppedValue(from value: Int, by direction: Int) -> Int {
+        let index = min(max(nearestIndex(to: value) + direction.signum(), 0), values.count - 1)
+        return values[index]
     }
 
     var errorMessage: String {

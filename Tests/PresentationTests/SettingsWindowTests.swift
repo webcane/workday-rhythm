@@ -22,10 +22,30 @@ final class SettingsWindowTests: XCTestCase {
         let window = AppShell.makeSettingsWindow()
         // 3456 × 2234 физических пикселей при Retina 2x — 1728 × 1117 pt.
         for screenHeight: CGFloat in [1117, 900, 600] {
-            AppShell.limitSettingsWindow(window, screenFrame: NSRect(x: 0, y: 0, width: 1728, height: screenHeight))
+            window.updateSizeLimits(screenFrame: NSRect(x: 0, y: 0, width: 1728, height: screenHeight))
             XCTAssertLessThanOrEqual(window.frame.height, screenHeight / 3)
             XCTAssertLessThanOrEqual(window.maxSize.height, screenHeight / 3)
             XCTAssertEqual(window.minSize.height, window.maxSize.height, accuracy: 1)
         }
     }
+
+    @MainActor
+    func testSmallResizeIsRejectedEvenIfHostingResetsWindowMinimum() throws {
+        _ = NSApplication.shared
+        let window = AppShell.makeSettingsWindow()
+        window.updateSizeLimits(screenFrame: NSRect(x: 0, y: 0, width: 1728, height: 1050))
+        let originalSize = window.frame.size
+        window.contentView?.layoutSubtreeIfNeeded()
+
+        // Auto Layout/hosting могут пересчитать свойства NSWindow после показа.
+        window.contentMinSize = .zero
+        window.minSize = .zero
+        let delegateSize = try XCTUnwrap(window.delegate?.windowWillResize?(window, to: NSSize(width: 100, height: 60)))
+        XCTAssertEqual(delegateSize, originalSize)
+
+        window.setFrame(NSRect(x: 0, y: 0, width: 100, height: 60), display: false)
+        XCTAssertEqual(window.frame.size, originalSize)
+        XCTAssertGreaterThanOrEqual(window.frame.width, 720)
+    }
+
 }

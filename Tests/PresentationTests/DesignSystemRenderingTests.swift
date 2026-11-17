@@ -62,6 +62,21 @@ final class DesignSystemRenderingTests: XCTestCase {
     }
 
     @MainActor
+    func testRulersAtSelectionBoundsRenderWithContextBeyondAllowedRange() throws {
+        let controls = VStack(spacing: DesignTokens.Space.small) {
+            HorizontalRulerPicker(title: "Начало дня", scale: .startTime, value: .constant(480))
+            HorizontalRulerPicker(title: "Начало дня", scale: .startTime, value: .constant(780))
+            HorizontalRulerPicker(title: "Фокусирование", scale: .focus, value: .constant(10))
+            HorizontalRulerPicker(title: "Отдых", scale: .rest, value: .constant(35))
+        }
+        .padding(DesignTokens.Space.small)
+        .background(DesignTokens.Palette.surface)
+        .frame(width: 536)
+        try render(controls, scheme: .light, name: "ruler-bounds")
+        try render(controls, scheme: .dark, name: "ruler-bounds")
+    }
+
+    @MainActor
     private func render<Content: View>(_ content: Content, scheme: ColorScheme, name: String) throws {
         _ = NSApplication.shared
         let appearance = try XCTUnwrap(NSAppearance(named: scheme == .light ? .aqua : .darkAqua))
