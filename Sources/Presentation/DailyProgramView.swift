@@ -99,7 +99,7 @@ struct DailyProgramView: View {
                     title: "Сохранить изменения", role: .primary,
                     isLoading: isSaving, error: saveError, action: save
                 )
-                .disabled(hasInvalidValues || !isSaveAvailable)
+                .disabled(!isSaveEnabled)
             }
         }
         .padding(DesignTokens.Space.small)
@@ -116,6 +116,10 @@ struct DailyProgramView: View {
             || !RulerScale.longBreak.contains(draft.longBreakMinutes)
             || !draft.hasAllowedDayHours
             || !workNumbers.contains(draft.longBreakAfter)
+    }
+
+    var isSaveEnabled: Bool {
+        !isSaving && isSaveAvailable && !hasInvalidValues
     }
 
     private func error(_ message: String) -> some View {

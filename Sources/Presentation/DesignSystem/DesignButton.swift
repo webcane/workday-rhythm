@@ -13,6 +13,10 @@ struct DesignButton: View {
     var error: String?
     let action: () -> Void
 
+    static func shouldPerformAction(isLoading: Bool) -> Bool {
+        !isLoading
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Space.tiny) {
             if role == .primary {
@@ -30,7 +34,7 @@ struct DesignButton: View {
 
     private var button: some View {
         Button {
-            guard !isLoading else { return }
+            guard Self.shouldPerformAction(isLoading: isLoading) else { return }
             action()
         } label: {
             HStack(spacing: DesignTokens.Space.small) {

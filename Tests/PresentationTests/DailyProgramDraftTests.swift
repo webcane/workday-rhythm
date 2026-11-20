@@ -22,4 +22,29 @@ final class DailyProgramDraftTests: XCTestCase {
 
         XCTAssertFalse(draft.hasAllowedDayHours)
     }
+
+    @MainActor
+    func testSaveIsEnabledOnlyForValidIdleAvailableDraft() {
+        var draft = DailyProgramDraft()
+        let view = DailyProgramView(
+            draft: .constant(draft), endTime: "18:00", workNumbers: Array(1...12),
+            isSaveAvailable: true, save: {}, cancel: {})
+        XCTAssertTrue(view.isSaveEnabled)
+
+        draft.focusMinutes = 42
+        let invalidView = DailyProgramView(
+            draft: .constant(draft), endTime: "18:00", workNumbers: Array(1...12),
+            isSaveAvailable: true, save: {}, cancel: {})
+        XCTAssertFalse(invalidView.isSaveEnabled)
+
+        let unavailableView = DailyProgramView(
+            draft: .constant(.init()), endTime: "18:00", workNumbers: Array(1...12),
+            isSaveAvailable: false, save: {}, cancel: {})
+        XCTAssertFalse(unavailableView.isSaveEnabled)
+
+        let savingView = DailyProgramView(
+            draft: .constant(.init()), endTime: "18:00", workNumbers: Array(1...12),
+            isSaving: true, save: {}, cancel: {})
+        XCTAssertFalse(savingView.isSaveEnabled)
+    }
 }
