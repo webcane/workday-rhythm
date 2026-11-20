@@ -20,7 +20,7 @@ struct DesignSystemGallery: View {
                         RoundedRectangle(cornerRadius: DesignTokens.controlRadius)
                             .stroke(DesignTokens.Palette.separator))
             }
-            Rectangle().fill(DesignTokens.Palette.separator).frame(height: 1)
+            Rectangle().fill(DesignTokens.Palette.separator).frame(height: DesignTokens.separatorThickness)
             Label("Системный акцент", systemImage: "cursorarrow.click")
                 .foregroundStyle(DesignTokens.Palette.accent)
             Label("Выбранная риска", systemImage: "slider.horizontal.3")
@@ -32,11 +32,11 @@ struct DesignSystemGallery: View {
             Label("Ошибка", systemImage: "exclamationmark.circle")
                 .foregroundStyle(DesignTokens.Palette.danger)
             HStack(alignment: .bottom, spacing: DesignTokens.Space.small) {
-                ForEach([4, 8, 12, 16, 24, 32], id: \.self) { space in
+                ForEach(DesignTokens.Space.all, id: \.self) { space in
                     VStack {
                         Rectangle().fill(DesignTokens.Palette.accent)
-                            .frame(width: CGFloat(space), height: CGFloat(space))
-                        Text("\(space)")
+                            .frame(width: space, height: space)
+                        Text("\(Int(space))")
                     }
                 }
             }

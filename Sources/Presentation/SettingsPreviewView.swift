@@ -7,7 +7,7 @@ struct SettingsPreviewView: View {
 
     var body: some View {
         DailyProgramView(
-            draft: $draft, endTime: "—", workNumbers: Array(1...12),
+            draft: $draft, endTime: "—", workNumbers: DailyProgramDraft.allowedWorkNumbers,
             notice: "Предпросмотр · сохранение и расчёт программы ещё не подключены",
             isSaveAvailable: false, save: {},
             cancel: {

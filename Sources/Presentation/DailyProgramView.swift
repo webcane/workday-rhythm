@@ -34,17 +34,28 @@ struct DailyProgramView: View {
                     HorizontalRulerPicker(title: "Начало дня", scale: .startTime, value: $draft.startMinutes)
                     HStack(spacing: DesignTokens.Space.small) {
                         Picker("Длительность дня", selection: $draft.dayHours) {
-                            ForEach([4, 6, 8, 10], id: \.self) { hours in
+                            ForEach(DailyProgramDraft.allowedDayHours, id: \.self) { hours in
                                 Text("\(hours) ч").tag(hours)
                             }
                         }
                         .pickerStyle(.segmented)
+                        .focusable()
+                        .onMoveCommand { direction in
+                            if let value = movedSelection(
+                                from: draft.dayHours,
+                                in: DailyProgramDraft.allowedDayHours,
+                                direction: direction)
+                            {
+                                draft.dayHours = value
+                            }
+                        }
                         Label("Конец дня: \(endTime)", systemImage: "sunset")
                             .font(DesignTokens.Typography.caption)
                             .foregroundStyle(DesignTokens.Palette.textSecondary)
                     }
-                    if ![4, 6, 8, 10].contains(draft.dayHours) {
-                        error("Выберите длительность дня: 4, 6, 8 или 10 часов.")
+                    if !draft.hasAllowedDayHours {
+                        error(
+                            "Выберите длительность дня: \(DailyProgramDraft.allowedDayHoursDescription) часов.")
                     }
 
                 }
@@ -65,6 +76,16 @@ struct DailyProgramView: View {
                         }
                     }
                     .pickerStyle(.menu)
+                    .focusable()
+                    .onMoveCommand { direction in
+                        if let value = movedSelection(
+                            from: draft.longBreakAfter,
+                            in: workNumbers,
+                            direction: direction)
+                        {
+                            draft.longBreakAfter = value
+                        }
+                    }
                     if !workNumbers.contains(draft.longBreakAfter) {
                         error("Выберите номер работы из меню.")
                     }
@@ -93,7 +114,7 @@ struct DailyProgramView: View {
             || !RulerScale.focus.contains(draft.focusMinutes)
             || !RulerScale.rest.contains(draft.restMinutes)
             || !RulerScale.longBreak.contains(draft.longBreakMinutes)
-            || ![4, 6, 8, 10].contains(draft.dayHours)
+            || !draft.hasAllowedDayHours
             || !workNumbers.contains(draft.longBreakAfter)
     }
 
@@ -102,21 +123,39 @@ struct DailyProgramView: View {
             .font(DesignTokens.Typography.caption)
             .foregroundStyle(DesignTokens.Palette.danger)
     }
+
+    private func movedSelection(
+        from currentValue: Int,
+        in values: [Int],
+        direction: MoveCommandDirection
+    ) -> Int? {
+        guard let currentIndex = values.firstIndex(of: currentValue) else { return nil }
+        let offset: Int
+        switch direction {
+        case .left, .down: offset = -1
+        case .right, .up: offset = 1
+        default: return nil
+        }
+        return values[min(max(currentIndex + offset, values.startIndex), values.index(before: values.endIndex))]
+    }
 }
 
 struct DailyProgramViewPreviews: PreviewProvider {
     static var previews: some View {
         Group {
             DailyProgramView(
-                draft: .constant(.init()), endTime: "18:00", workNumbers: Array(1...12), save: {}, cancel: {}
+                draft: .constant(.init()), endTime: "18:00",
+                workNumbers: DailyProgramDraft.allowedWorkNumbers, save: {}, cancel: {}
             )
             .frame(width: 720, height: 850).preferredColorScheme(.light)
             DailyProgramView(
-                draft: .constant(.init()), endTime: "18:00", workNumbers: Array(1...12), save: {}, cancel: {}
+                draft: .constant(.init()), endTime: "18:00",
+                workNumbers: DailyProgramDraft.allowedWorkNumbers, save: {}, cancel: {}
             )
             .frame(width: 720, height: 850).preferredColorScheme(.dark)
             DailyProgramView(
-                draft: .constant(.init()), endTime: "18:00", workNumbers: Array(1...12), save: {}, cancel: {}
+                draft: .constant(.init()), endTime: "18:00",
+                workNumbers: DailyProgramDraft.allowedWorkNumbers, save: {}, cancel: {}
             )
             .frame(width: 380, height: 1000)
         }

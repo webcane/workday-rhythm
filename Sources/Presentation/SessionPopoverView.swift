@@ -17,7 +17,7 @@ struct SessionPopoverView: View {
                 .font(DesignTokens.Typography.metric)
                 .accessibilityLabel("Осталось \(remainingTime)")
             DesignButton(title: commandTitle, role: .primary, action: command)
-            Rectangle().fill(DesignTokens.Palette.separator).frame(height: 1)
+            Rectangle().fill(DesignTokens.Palette.separator).frame(height: DesignTokens.separatorThickness)
             HStack(spacing: DesignTokens.Space.small) {
                 DesignButton(title: "Настройки", action: settings)
                 Spacer(minLength: 0)

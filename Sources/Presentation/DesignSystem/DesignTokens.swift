@@ -31,7 +31,10 @@ enum DesignTokens {
         static let regular: CGFloat = 16
         static let section: CGFloat = 24
         static let large: CGFloat = 32
+
+        static let all = [tiny, small, medium, regular, section, large]
     }
 
     static let controlRadius: CGFloat = 8
+    static let separatorThickness: CGFloat = 1
 }
