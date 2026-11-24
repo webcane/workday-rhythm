@@ -15,13 +15,23 @@ struct DailyProgramView: View {
     let cancel: () -> Void
 
     var body: some View {
-        ScrollView { formContent }
+        formContent
             .font(DesignTokens.Typography.body)
             .foregroundStyle(DesignTokens.Palette.textPrimary)
             .background(DesignTokens.Palette.surface)
     }
 
     var formContent: some View {
+        VStack(spacing: 0) {
+            ScrollView { editorContent }
+            Divider()
+            actionBar
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(DesignTokens.Palette.surface)
+    }
+
+    private var editorContent: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Space.small) {
                 Text("Дневная программа").font(DesignTokens.Typography.windowTitle).fixedSize()
@@ -98,22 +108,23 @@ struct DailyProgramView: View {
                         .accessibilityHidden(breakErrorMessage == nil)
                 }
             }
-            HStack(spacing: DesignTokens.Space.small) {
-                Spacer(minLength: 0)
-                DesignButton(title: "Отменить", action: cancel)
-                    .disabled(isSaving)
-                DesignButton(
-                    title: "Сохранить изменения", role: .primary,
-                    isLoading: isSaving, error: saveError, action: save
-                )
-                .disabled(!isSaveEnabled)
-            }
         }
         .padding(DesignTokens.Space.small)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .font(DesignTokens.Typography.body)
-        .foregroundStyle(DesignTokens.Palette.textPrimary)
-        .background(DesignTokens.Palette.surface)
+    }
+
+    private var actionBar: some View {
+        HStack(spacing: DesignTokens.Space.small) {
+            Spacer(minLength: 0)
+            DesignButton(title: "Отменить", action: cancel)
+                .disabled(isSaving)
+            DesignButton(
+                title: "Сохранить изменения", role: .primary,
+                isLoading: isSaving, error: saveError, action: save
+            )
+            .disabled(!isSaveEnabled)
+        }
+        .padding(DesignTokens.Space.small)
     }
 
     private var hasInvalidValues: Bool {

@@ -6,11 +6,17 @@ struct SettingsPreviewView: View {
     @State private var draft: DailyProgramDraft
     @State private var saveError: String?
     private let coordinator: SessionCoordinator
-    let cancel: () -> Void
+    private let close: () -> Void
+    private let log: (String) -> Void
 
-    init(coordinator: SessionCoordinator, cancel: @escaping () -> Void) {
+    init(
+        coordinator: SessionCoordinator,
+        close: @escaping () -> Void,
+        log: @escaping (String) -> Void = { print($0) }
+    ) {
         self.coordinator = coordinator
-        self.cancel = cancel
+        self.close = close
+        self.log = log
         _draft = State(initialValue: DailyProgramDraft(settings: coordinator.programSettings))
     }
 
@@ -20,16 +26,35 @@ struct SettingsPreviewView: View {
             draft: $draft, endTime: endTime,
             breakOptions: options,
             rules: coordinator.dailyProgramRules,
-            saveError: saveError, save: save,
+            saveError: saveError, save: { saveError = save(draft.settings) },
             cancel: {
                 draft = DailyProgramDraft(settings: coordinator.programSettings)
                 saveError = nil
-                cancel()
+                cancelEditing()
             }
         )
         .onAppear { draft.reconcileBreakSelection(with: options) }
         .onChange(of: options) { snapshot in
             draft.reconcileBreakSelection(with: snapshot)
+        }
+        .onChange(of: draft.startMinutes) { value in
+            logChange("Начало дня", value: formattedTime(value))
+        }
+        .onChange(of: draft.dayHours) { value in
+            logChange("Длительность дня", value: "\(value) ч")
+        }
+        .onChange(of: draft.focusMinutes) { value in
+            logChange("Фокусирование", value: "\(value) мин")
+        }
+        .onChange(of: draft.restMinutes) { value in
+            logChange("Отдых", value: "\(value) мин")
+        }
+        .onChange(of: draft.longBreakMinutes) { value in
+            logChange("Длинный перерыв", value: "\(value) мин")
+        }
+        .onChange(of: draft.longBreakAfter) { value in
+            let description = value.map { "после фокусирования №\($0)" } ?? "не выбран"
+            logChange("Начало длинного перерыва", value: description)
         }
     }
 
@@ -40,12 +65,37 @@ struct SettingsPreviewView: View {
         return String(format: "%02d:%02d", (minutes / 60) % 24, minutes % 60)
     }
 
-    private func save() {
+    func save(_ settings: DailyProgramSettings) -> String? {
         do {
-            try coordinator.saveProgram(draft.settings)
-            saveError = nil
+            try coordinator.saveProgram(settings)
+            log("[Настройки] Сохранено: \(programDescription(settings))")
+            close()
+            return nil
         } catch {
-            saveError = "Не удалось сохранить программу. Проверьте значения полей."
+            return "Не удалось сохранить программу. Проверьте значения полей."
         }
+    }
+
+    func cancelEditing() {
+        log("[Настройки] Изменения отменены")
+        close()
+    }
+
+    func logChange(_ name: String, value: String) {
+        log("[Настройки] \(name): \(value)")
+    }
+
+    private func formattedTime(_ minutes: Int) -> String {
+        String(format: "%02d:%02d", (minutes / 60) % 24, minutes % 60)
+    }
+
+    private func programDescription(_ settings: DailyProgramSettings) -> String {
+        let longBreak =
+            settings.longBreakAfter.map {
+                "\(settings.longBreakMinutes) мин после фокусирования №\($0)"
+            } ?? "не задан"
+        return "начало \(formattedTime(settings.startMinutes)), день \(settings.dayHours) ч, "
+            + "фокусирование \(settings.focusMinutes) мин, отдых \(settings.restMinutes) мин, "
+            + "длинный перерыв \(longBreak)"
     }
 }

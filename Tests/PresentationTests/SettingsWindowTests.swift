@@ -24,16 +24,37 @@ final class SettingsWindowTests: XCTestCase {
         )
     }
     @MainActor
-    func testWindowHeightIncludingTitleBarIsLimitedToThirdOfScreen() {
+    func testWindowHeightIncludingTitleBarIsLimitedToHalfOfScreen() {
         _ = NSApplication.shared
         let window = makeSettingsWindow()
         // 3456 × 2234 физических пикселей при Retina 2x — 1728 × 1117 pt.
         for screenHeight: CGFloat in [1117, 900, 600] {
             window.updateSizeLimits(screenFrame: NSRect(x: 0, y: 0, width: 1728, height: screenHeight))
-            XCTAssertLessThanOrEqual(window.frame.height, screenHeight / 3)
-            XCTAssertLessThanOrEqual(window.maxSize.height, screenHeight / 3)
+            XCTAssertLessThanOrEqual(window.frame.height, floor(screenHeight / 2))
+            XCTAssertLessThanOrEqual(window.maxSize.height, floor(screenHeight / 2))
             XCTAssertLessThanOrEqual(window.minSize.height, window.maxSize.height)
         }
+    }
+
+    @MainActor
+    func testCurrentFormUsesFullPreferredHeightWithoutReachingScreenLimit() throws {
+        _ = NSApplication.shared
+        let window = makeSettingsWindow()
+        let screenHeight: CGFloat = 1117
+
+        window.updateSizeLimits(screenFrame: NSRect(x: 0, y: 0, width: 1728, height: screenHeight))
+
+        let content = try XCTUnwrap(window.contentView)
+        let preferredFrameHeight = window.frameRect(
+            forContentRect: NSRect(
+                x: 0,
+                y: 0,
+                width: SettingsWindow.preferredContentWidth,
+                height: content.fittingSize.height
+            )
+        ).height
+        XCTAssertEqual(window.frame.height, preferredFrameHeight, accuracy: 0.5)
+        XCTAssertLessThan(window.frame.height, floor(screenHeight / 2))
     }
 
     @MainActor

@@ -4,9 +4,10 @@ import AppKit
 @MainActor
 final class SettingsWindow: NSWindow, NSWindowDelegate {
     private enum Metrics {
-        static let maximumHeightDivisor: CGFloat = 3
-        static let minimumContentWidth: CGFloat = 720
+        static let maximumHeightDivisor: CGFloat = 2
     }
+
+    static let preferredContentWidth: CGFloat = 720
 
     private var minimumFrameSize: NSSize?
     private var maximumFrameHeight: CGFloat?
@@ -14,13 +15,13 @@ final class SettingsWindow: NSWindow, NSWindowDelegate {
     func updateSizeLimits(screenFrame: NSRect) {
         let maximumHeight = floor(screenFrame.height / Metrics.maximumHeightDivisor)
         let minimumWidth = frameRect(
-            forContentRect: NSRect(x: 0, y: 0, width: Metrics.minimumContentWidth, height: 0)
+            forContentRect: NSRect(x: 0, y: 0, width: Self.preferredContentWidth, height: 0)
         ).width
         let preferredHeight = frameRect(
             forContentRect: NSRect(
                 x: 0,
                 y: 0,
-                width: Metrics.minimumContentWidth,
+                width: Self.preferredContentWidth,
                 height: contentView?.fittingSize.height ?? 0
             )
         ).height

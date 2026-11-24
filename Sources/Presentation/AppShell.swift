@@ -114,7 +114,7 @@ public final class AppShell: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     static func makeSettingsWindow(coordinator: SessionCoordinator) -> SettingsWindow {
         let window = SettingsWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 720, height: 300),
+            contentRect: NSRect(x: 0, y: 0, width: SettingsWindow.preferredContentWidth, height: 0),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered,
             defer: false
@@ -123,8 +123,8 @@ public final class AppShell: NSObject, NSApplicationDelegate, NSMenuDelegate {
         window.isReleasedWhenClosed = false
         window.delegate = window
         let content = NSHostingView(
-            rootView: SettingsPreviewView(coordinator: coordinator, cancel: { [weak window] in window?.close() }))
-        // Размер окна задаёт оболочка; высота содержимого доступна через ScrollView.
+            rootView: SettingsPreviewView(coordinator: coordinator, close: { [weak window] in window?.close() }))
+        // Высота окна выводится из полного предпочтительного размера SwiftUI-содержимого.
         content.sizingOptions = [.intrinsicContentSize]
         window.contentView = content
         let screenFrame = NSScreen.main?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
