@@ -24,12 +24,12 @@
 ## Команды
 
 ```sh
-./scripts/swift.sh package dump-package
+just dump-package
 just check
-./scripts/swift.sh run WorkdayRhythmApp
+just run
 ```
 
-`just check` последовательно выполняет строгий `swift-format` lint, проверку имён Swift-файлов, сборку и XCTest. Команда ничего не исправляет и останавливается при первой ошибке. Для автоматического исправления форматирования используйте `just fmt`, затем повторите `just check`. Отдельные рецепты `just lint`, `just names`, `just build` и `just test` удобны при локальной работе. `just` используется только локально; CI запускает эти проверки прямыми командами `swift format lint --strict --recursive Package.swift Sources Tests`, `./scripts/check-names.sh`, `swift build` и `swift test`.
+`just dump-package` печатает разобранный manifest пакета. `just check` последовательно выполняет строгий `swift-format` lint, проверку имён Swift-файлов, сборку и XCTest. Команда ничего не исправляет и останавливается при первой ошибке. Для автоматического исправления форматирования используйте `just fmt`, затем повторите `just check`. Отдельные рецепты `just lint`, `just names`, `just dump-package`, `just build`, `just test` и `just run` удобны при локальной работе. `just run` запускает приложение из исходников: эквивалент `./scripts/swift.sh run WorkdayRhythmApp`. `just` используется только локально; CI запускает эти проверки прямыми командами `swift format lint --strict --recursive Package.swift Sources Tests`, `./scripts/check-names.sh`, `swift build` и `swift test`.
 
 Скрипт запускает Swift из выбранного Xcode. Если `xcode-select -p` указывает на Command Line Tools, он использует `/Applications/Xcode.app/Contents/Developer` только для текущей команды. Явный `DEVELOPER_DIR` имеет приоритет; для Xcode в другом каталоге задайте его самостоятельно. Скрипт не меняет глобальные настройки.
 

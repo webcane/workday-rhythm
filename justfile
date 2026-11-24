@@ -12,10 +12,16 @@ lint: _package
 names: _package
     ./scripts/check-names.sh
 
+dump-package: _package
+    ./scripts/swift.sh package dump-package
+
 build: _package
     ./scripts/swift.sh build
 
 test: _package
     ./scripts/swift.sh test
+
+run: _package
+    ./scripts/swift.sh run WorkdayRhythmApp
 
 check: lint names build test
