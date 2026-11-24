@@ -1,3 +1,4 @@
+import SessionCoordinator
 import XCTest
 
 @testable import Presentation
@@ -9,10 +10,6 @@ final class DailyProgramDraftTests: XCTestCase {
 
     func testInitialDayHoursAreAllowed() {
         XCTAssertTrue(DailyProgramDraft().hasAllowedDayHours)
-    }
-
-    func testAllowedWorkNumbersCoverReferenceProgramOptions() {
-        XCTAssertEqual(DailyProgramDraft.allowedWorkNumbers, Array(1...12))
     }
 
     func testDayHoursOutsideAllowedOptionsAreRejected() {
@@ -27,23 +24,27 @@ final class DailyProgramDraftTests: XCTestCase {
     func testSaveIsEnabledOnlyForValidIdleAvailableDraft() {
         var draft = DailyProgramDraft()
         let view = DailyProgramView(
-            draft: .constant(draft), endTime: "18:00", workNumbers: Array(1...12),
+            draft: .constant(draft), endTime: "18:00",
+            breakOptions: SessionCoordinator.longBreakOptions(for: DailyProgramDraft().optionsRequest),
             isSaveAvailable: true, save: {}, cancel: {})
         XCTAssertTrue(view.isSaveEnabled)
 
         draft.focusMinutes = 42
         let invalidView = DailyProgramView(
-            draft: .constant(draft), endTime: "18:00", workNumbers: Array(1...12),
+            draft: .constant(draft), endTime: "18:00",
+            breakOptions: SessionCoordinator.longBreakOptions(for: DailyProgramDraft().optionsRequest),
             isSaveAvailable: true, save: {}, cancel: {})
         XCTAssertFalse(invalidView.isSaveEnabled)
 
         let unavailableView = DailyProgramView(
-            draft: .constant(.init()), endTime: "18:00", workNumbers: Array(1...12),
+            draft: .constant(.init()), endTime: "18:00",
+            breakOptions: SessionCoordinator.longBreakOptions(for: DailyProgramDraft().optionsRequest),
             isSaveAvailable: false, save: {}, cancel: {})
         XCTAssertFalse(unavailableView.isSaveEnabled)
 
         let savingView = DailyProgramView(
-            draft: .constant(.init()), endTime: "18:00", workNumbers: Array(1...12),
+            draft: .constant(.init()), endTime: "18:00",
+            breakOptions: SessionCoordinator.longBreakOptions(for: DailyProgramDraft().optionsRequest),
             isSaving: true, save: {}, cancel: {})
         XCTAssertFalse(savingView.isSaveEnabled)
     }

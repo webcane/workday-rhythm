@@ -44,6 +44,7 @@ public final class AppShell: NSObject, NSApplicationDelegate {
     }
 
     public func applicationWillTerminate(_ notification: Notification) {
+        coordinator.stopSession()
         if let statusItem {
             NSStatusBar.system.removeStatusItem(statusItem)
         }
@@ -52,13 +53,16 @@ public final class AppShell: NSObject, NSApplicationDelegate {
 
     private func showSettings() {
         if settingsWindow == nil {
-            settingsWindow = Self.makeSettingsWindow()
+            settingsWindow = Self.makeSettingsWindow(projectOptions: coordinator.projectLongBreakOptions)
         }
         settingsWindow?.makeKeyAndOrderFront(nil)
         NSApplication.shared.activate(ignoringOtherApps: true)
     }
 
-    static func makeSettingsWindow() -> SettingsWindow {
+    static func makeSettingsWindow(
+        projectOptions: @escaping @MainActor (LongBreakOptionsRequest) -> LongBreakOptionsSnapshot =
+            SessionCoordinator.longBreakOptions
+    ) -> SettingsWindow {
         let window = SettingsWindow(
             contentRect: NSRect(x: 0, y: 0, width: 720, height: 300),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
@@ -69,7 +73,8 @@ public final class AppShell: NSObject, NSApplicationDelegate {
         window.isReleasedWhenClosed = false
         window.delegate = window
         let content = NSHostingView(
-            rootView: SettingsPreviewView(cancel: { [weak window] in window?.close() }))
+            rootView: SettingsPreviewView(
+                projectOptions: projectOptions, cancel: { [weak window] in window?.close() }))
         // Размер окна задаёт оболочка; высота содержимого доступна через ScrollView.
         content.sizingOptions = []
         window.contentView = content

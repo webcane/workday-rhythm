@@ -1,10 +1,11 @@
+import SessionCoordinator
 import SwiftUI
 
 /// Эталон формы: значения, вычисленный конец и прикладные действия поступают извне.
 struct DailyProgramView: View {
     @Binding var draft: DailyProgramDraft
     let endTime: String
-    let workNumbers: [Int]
+    let breakOptions: LongBreakOptionsSnapshot
     var notice: String?
     var isSaving = false
     var isSaveAvailable = true
@@ -20,7 +21,7 @@ struct DailyProgramView: View {
     }
 
     var formContent: some View {
-        VStack(alignment: .leading, spacing: DesignTokens.Space.tiny) {
+        VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Space.small) {
                 Text("Дневная программа").font(DesignTokens.Typography.windowTitle).fixedSize()
                 Text(notice ?? "Настройте ритм работы и отдыха на весь день.")
@@ -70,25 +71,28 @@ struct DailyProgramView: View {
                 VStack(alignment: .leading, spacing: DesignTokens.Space.tiny) {
                     HorizontalRulerPicker(
                         title: "Длинный перерыв", scale: .longBreak, value: $draft.longBreakMinutes)
-                    Picker("После какой работы", selection: $draft.longBreakAfter) {
-                        ForEach(workNumbers, id: \.self) { number in
-                            Text("После работы №\(number)").tag(number)
+                    HStack(spacing: DesignTokens.Space.small) {
+                        Text("Начало перерыва")
+                        Menu {
+                            ForEach(breakOptions.options) { option in
+                                Button(option.timeLabel) {
+                                    selectBreak(after: option.afterFocusNumber)
+                                }
+                                .accessibilityLabel(option.accessibilityDescription)
+                                .disabled(!option.isAvailable)
+                            }
+                        } label: {
+                            Text(breakMenuTitle)
                         }
+                        .fixedSize()
+                        .focusable()
+                        .accessibilityLabel("Начало перерыва")
+                        .accessibilityValue(breakMenuTitle)
+                        .help("Номинальное время от начала дня, без фактических пауз и ожиданий подтверждения.")
                     }
-                    .pickerStyle(.menu)
-                    .focusable()
-                    .onMoveCommand { direction in
-                        if let value = movedSelection(
-                            from: draft.longBreakAfter,
-                            in: workNumbers,
-                            direction: direction)
-                        {
-                            draft.longBreakAfter = value
-                        }
-                    }
-                    if !workNumbers.contains(draft.longBreakAfter) {
-                        error("Выберите номер работы из меню.")
-                    }
+                    error(breakErrorMessage ?? " ")
+                        .opacity(breakErrorMessage == nil ? 0 : 1)
+                        .accessibilityHidden(breakErrorMessage == nil)
                 }
             }
             HStack(spacing: DesignTokens.Space.small) {
@@ -115,7 +119,33 @@ struct DailyProgramView: View {
             || !RulerScale.rest.contains(draft.restMinutes)
             || !RulerScale.longBreak.contains(draft.longBreakMinutes)
             || !draft.hasAllowedDayHours
-            || !workNumbers.contains(draft.longBreakAfter)
+            || selectedBreakNumber == nil
+    }
+
+    private var workNumbers: [Int] {
+        breakOptions.options.filter(\.isAvailable).map(\.afterFocusNumber)
+    }
+
+    var selectedBreakNumber: Int? {
+        guard let number = draft.longBreakAfter, workNumbers.contains(number) else { return nil }
+        return number
+    }
+
+    var breakMenuTitle: String {
+        breakOptions.options.first {
+            $0.isAvailable && $0.afterFocusNumber == draft.longBreakAfter
+        }?.timeLabel ?? "Выберите время"
+    }
+
+    var breakErrorMessage: String? {
+        if let message = breakOptions.errorMessage { return message }
+        if workNumbers.isEmpty { return "До конца дня не помещаются перерыв и следующий фокус." }
+        if selectedBreakNumber == nil { return "Выберите допустимое время начала перерыва." }
+        return nil
+    }
+
+    func selectBreak(after number: Int) {
+        draft.selectBreak(after: number, in: breakOptions)
     }
 
     var isSaveEnabled: Bool {
@@ -133,12 +163,14 @@ struct DailyProgramView: View {
         in values: [Int],
         direction: MoveCommandDirection
     ) -> Int? {
-        guard let currentIndex = values.firstIndex(of: currentValue) else { return nil }
         let offset: Int
         switch direction {
         case .left, .down: offset = -1
         case .right, .up: offset = 1
         default: return nil
+        }
+        guard let currentIndex = values.firstIndex(of: currentValue) else {
+            return offset > 0 ? values.first : values.last
         }
         return values[min(max(currentIndex + offset, values.startIndex), values.index(before: values.endIndex))]
     }
@@ -149,17 +181,20 @@ struct DailyProgramViewPreviews: PreviewProvider {
         Group {
             DailyProgramView(
                 draft: .constant(.init()), endTime: "18:00",
-                workNumbers: DailyProgramDraft.allowedWorkNumbers, save: {}, cancel: {}
+                breakOptions: SessionCoordinator.longBreakOptions(for: DailyProgramDraft().optionsRequest), save: {},
+                cancel: {}
             )
             .frame(width: 720, height: 850).preferredColorScheme(.light)
             DailyProgramView(
                 draft: .constant(.init()), endTime: "18:00",
-                workNumbers: DailyProgramDraft.allowedWorkNumbers, save: {}, cancel: {}
+                breakOptions: SessionCoordinator.longBreakOptions(for: DailyProgramDraft().optionsRequest), save: {},
+                cancel: {}
             )
             .frame(width: 720, height: 850).preferredColorScheme(.dark)
             DailyProgramView(
                 draft: .constant(.init()), endTime: "18:00",
-                workNumbers: DailyProgramDraft.allowedWorkNumbers, save: {}, cancel: {}
+                breakOptions: SessionCoordinator.longBreakOptions(for: DailyProgramDraft().optionsRequest), save: {},
+                cancel: {}
             )
             .frame(width: 380, height: 1000)
         }

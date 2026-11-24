@@ -21,6 +21,12 @@ let package = Package(
             name: "WorkdayRhythmApp",
             dependencies: ["Presentation", "SessionCoordinator", "SettingsStore", "MacIntegration"]),
         .testTarget(name: "ArchitectureTests"),
+        .testTarget(name: "ProgramTests", dependencies: ["Program"]),
+        .testTarget(name: "SettingsStoreTests", dependencies: ["SettingsStore", "Program"]),
+        .testTarget(name: "TimerEngineTests", dependencies: ["TimerEngine", "Program"]),
+        .testTarget(
+            name: "SessionCoordinatorTests",
+            dependencies: ["SessionCoordinator", "MacIntegration", "SettingsStore", "Program"]),
         .testTarget(name: "PresentationTests", dependencies: ["Presentation"]),
     ]
 )

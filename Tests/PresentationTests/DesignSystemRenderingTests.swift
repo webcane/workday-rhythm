@@ -1,4 +1,5 @@
 import AppKit
+import SessionCoordinator
 import SwiftUI
 import XCTest
 
@@ -19,7 +20,9 @@ final class DesignSystemRenderingTests: XCTestCase {
                 let accent: Color? = alternativeAccent ? .purple : nil
                 let suffix = alternativeAccent ? "purple" : "system"
                 let settings = DailyProgramView(
-                    draft: .constant(.init()), endTime: "18:00", workNumbers: Array(1...12), save: {}, cancel: {})
+                    draft: .constant(.init()), endTime: "18:00",
+                    breakOptions: SessionCoordinator.longBreakOptions(for: DailyProgramDraft().optionsRequest),
+                    save: {}, cancel: {})
                 try render(
                     settings.formContent.frame(width: 720, height: 900).accentColor(accent),
                     scheme: scheme, name: "settings-\(suffix)")
@@ -40,7 +43,9 @@ final class DesignSystemRenderingTests: XCTestCase {
         var draft = DailyProgramDraft()
         draft.focusMinutes = 42
         let settings = DailyProgramView(
-            draft: .constant(draft), endTime: "18:00", workNumbers: Array(1...12), save: {}, cancel: {})
+            draft: .constant(draft), endTime: "18:00",
+            breakOptions: SessionCoordinator.longBreakOptions(for: DailyProgramDraft().optionsRequest), save: {},
+            cancel: {})
         try render(
             settings.formContent.frame(width: 720, height: 1000).environment(\.dynamicTypeSize, .accessibility3),
             scheme: .light, name: "settings-invalid-large")
@@ -48,10 +53,47 @@ final class DesignSystemRenderingTests: XCTestCase {
     }
 
     @MainActor
+    func testClearedBreakSelectionRendersInBothAppearances() throws {
+        var draft = DailyProgramDraft()
+        draft.dayHours = 4
+        draft.longBreakAfter = nil
+        let form = DailyProgramView(
+            draft: .constant(draft), endTime: "—",
+            breakOptions: SessionCoordinator.longBreakOptions(for: draft.optionsRequest),
+            save: {}, cancel: {})
+        for scheme in [ColorScheme.light, .dark] {
+            try render(form.formContent.frame(width: 720), scheme: scheme, name: "settings-break-unselected")
+        }
+    }
+
+    @MainActor
+    func testBreakErrorDoesNotMoveButtonsOrExceedCompactHeight() throws {
+        _ = NSApplication.shared
+        var draft = DailyProgramDraft()
+        draft.dayHours = 4
+        draft.longBreakAfter = 3
+        let snapshot = SessionCoordinator.longBreakOptions(for: draft.optionsRequest)
+        let valid = DailyProgramView(
+            draft: .constant(draft), endTime: "—", breakOptions: snapshot, save: {}, cancel: {})
+        let validHost = NSHostingView(rootView: valid.formContent.frame(width: 720))
+        draft.longBreakAfter = nil
+        let invalid = DailyProgramView(
+            draft: .constant(draft), endTime: "—", breakOptions: snapshot, save: {}, cancel: {})
+        let invalidHost = NSHostingView(rootView: invalid.formContent.frame(width: 720))
+        XCTAssertEqual(validHost.fittingSize.height, invalidHost.fittingSize.height, accuracy: 0.5)
+        XCTAssertLessThanOrEqual(invalidHost.fittingSize.height, 300)
+        for scheme in [ColorScheme.light, .dark] {
+            try render(valid.formContent.frame(width: 720), scheme: scheme, name: "settings-menu-valid")
+            try render(invalid.formContent.frame(width: 720), scheme: scheme, name: "settings-menu-error")
+        }
+    }
+
+    @MainActor
     func testAllSettingsFitInCompactWindowWithoutScrolling() throws {
         _ = NSApplication.shared
         let form = DailyProgramView(
-            draft: .constant(.init()), endTime: "—", workNumbers: Array(1...12),
+            draft: .constant(.init()), endTime: "—",
+            breakOptions: SessionCoordinator.longBreakOptions(for: DailyProgramDraft().optionsRequest),
             notice: "Предпросмотр · сохранение и расчёт программы ещё не подключены",
             isSaveAvailable: false, save: {}, cancel: {})
         let content = form.formContent.frame(width: 720)
