@@ -9,17 +9,28 @@ final class SettingsWindow: NSWindow, NSWindowDelegate {
     }
 
     private var minimumFrameSize: NSSize?
+    private var maximumFrameHeight: CGFloat?
 
     func updateSizeLimits(screenFrame: NSRect) {
-        let height = floor(screenFrame.height / Metrics.maximumHeightDivisor)
+        let maximumHeight = floor(screenFrame.height / Metrics.maximumHeightDivisor)
         let minimumWidth = frameRect(
             forContentRect: NSRect(x: 0, y: 0, width: Metrics.minimumContentWidth, height: 0)
         ).width
-        let minimum = NSSize(width: minimumWidth, height: height)
+        let preferredHeight = frameRect(
+            forContentRect: NSRect(
+                x: 0,
+                y: 0,
+                width: Metrics.minimumContentWidth,
+                height: contentView?.fittingSize.height ?? 0
+            )
+        ).height
+        let minimum = NSSize(width: minimumWidth, height: min(preferredHeight, maximumHeight))
         minimumFrameSize = minimum
-        maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: height)
+        maximumFrameHeight = maximumHeight
+        maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: maximumHeight)
         minSize = minimum
         var target = frame
+        let height = min(max(preferredHeight, minimum.height), maximumHeight)
         target.origin.y += target.height - height
         target.size.height = height
         setFrame(target, display: false)
@@ -43,9 +54,9 @@ final class SettingsWindow: NSWindow, NSWindowDelegate {
     }
 
     private func constrainedSize(_ proposed: NSSize) -> NSSize {
-        guard let minimumFrameSize else { return proposed }
+        guard let minimumFrameSize, let maximumFrameHeight else { return proposed }
         return NSSize(
             width: max(proposed.width, minimumFrameSize.width),
-            height: minimumFrameSize.height)
+            height: min(max(proposed.height, minimumFrameSize.height), maximumFrameHeight))
     }
 }

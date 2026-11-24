@@ -1,22 +1,54 @@
 import Foundation
+import SessionCoordinator
 
 /// Представление шкалы в минутах; не рассчитывает программу и не сохраняет настройки.
-enum RulerScale: CaseIterable {
-    case startTime
-    case focus
-    case rest
-    case longBreak
-
-    var range: ClosedRange<Int> {
-        switch self {
-        case .startTime: 480...780
-        case .focus: 10...120
-        case .rest: 5...35
-        case .longBreak: 20...240
-        }
+struct RulerScale: Equatable {
+    private enum Kind: CaseIterable {
+        case startTime
+        case focus
+        case rest
+        case longBreak
     }
 
-    var step: Int { self == .startTime ? 30 : 5 }
+    private enum Metrics {
+        static let durationStep = 5
+    }
+
+    let range: ClosedRange<Int>
+    let step: Int
+    private let kind: Kind
+
+    static var startTime: Self { startTime(for: SessionCoordinator.defaultDailyProgramRules) }
+    static var focus: Self { focus(for: SessionCoordinator.defaultDailyProgramRules) }
+    static var rest: Self { rest(for: SessionCoordinator.defaultDailyProgramRules) }
+    static var longBreak: Self { longBreak(for: SessionCoordinator.defaultDailyProgramRules) }
+    static var allCases: [Self] { all(for: SessionCoordinator.defaultDailyProgramRules) }
+
+    static func startTime(for rules: DailyProgramRulesSnapshot) -> Self {
+        Self(kind: .startTime, range: rules.startMinutes.range, step: rules.startMinutes.step)
+    }
+
+    static func focus(for rules: DailyProgramRulesSnapshot) -> Self {
+        Self(kind: .focus, range: rules.focusDurationMinutes, step: Metrics.durationStep)
+    }
+
+    static func rest(for rules: DailyProgramRulesSnapshot) -> Self {
+        Self(kind: .rest, range: rules.restDurationMinutes, step: Metrics.durationStep)
+    }
+
+    static func longBreak(for rules: DailyProgramRulesSnapshot) -> Self {
+        Self(kind: .longBreak, range: rules.restOverrideDurationMinutes, step: Metrics.durationStep)
+    }
+
+    static func all(for rules: DailyProgramRulesSnapshot) -> [Self] {
+        [startTime(for: rules), focus(for: rules), rest(for: rules), longBreak(for: rules)]
+    }
+
+    private init(kind: Kind, range: ClosedRange<Int>, step: Int) {
+        self.kind = kind
+        self.range = range
+        self.step = step
+    }
 
     var values: [Int] { Array(stride(from: range.lowerBound, through: range.upperBound, by: step)) }
 
@@ -30,7 +62,7 @@ enum RulerScale: CaseIterable {
     }
 
     func formatted(_ value: Int) -> String {
-        if self == .startTime {
+        if kind == .startTime {
             return String(format: "%02d:%02d", value / 60, value % 60)
         }
         return "\(value) мин"
@@ -39,7 +71,7 @@ enum RulerScale: CaseIterable {
     func hasLabel(at value: Int) -> Bool {
         guard value >= 0 else { return false }
         if value == range.lowerBound || value == range.upperBound { return true }
-        switch self {
+        switch kind {
         case .startTime: return value.isMultiple(of: 60)
         case .longBreak: return value.isMultiple(of: 20)
         case .focus: return value.isMultiple(of: 30)
@@ -50,8 +82,8 @@ enum RulerScale: CaseIterable {
     func displayValues(around value: Int, visibleSteps: Int) -> [Int] {
         let center = values[nearestIndex(to: value)]
         let count = min(max(visibleSteps, 1), 200)
-        let lower = self == .startTime ? max(0, center - count * step) : center - count * step
-        let upper = self == .startTime ? min(1440, center + count * step) : center + count * step
+        let lower = kind == .startTime ? max(0, center - count * step) : center - count * step
+        let upper = kind == .startTime ? min(1440, center + count * step) : center + count * step
         // Привязка к рискам сохраняет исходный шаг и за пределами допустимого интервала.
         let first = lower + (step - (lower - range.lowerBound) % step) % step
         return Array(stride(from: first, through: upper, by: step))

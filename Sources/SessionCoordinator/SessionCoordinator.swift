@@ -7,6 +7,8 @@ import TimerEngine
 /// Последовательно связывает чистое ядро, настройки и системные события macOS.
 @MainActor
 public final class SessionCoordinator {
+    public nonisolated static let defaultDailyProgramRules = DailyProgramRulesSnapshot(DailyProgramRules.standard)
+
     private var engine: TimerEngine
     private let settings: SettingsStore
     private let integration: any MacIntegrating
@@ -28,6 +30,15 @@ public final class SessionCoordinator {
 
     public var program: DailyProgram {
         settings.loadProgram()
+    }
+
+    public var programSettings: DailyProgramSettings {
+        DailyProgramSettings(program: settings.loadProgram())
+    }
+
+    /// Ограничения формы как независимый от Program снимок.
+    public var dailyProgramRules: DailyProgramRulesSnapshot {
+        Self.defaultDailyProgramRules
     }
 
     /// Запрос формы через координатор, переданный оболочке приложения.
@@ -103,6 +114,10 @@ public final class SessionCoordinator {
         try settings.saveProgram(program)
         process(engine.updateProgram(program, at: currentTime(), calendar: calendarProvider()))
         rescheduleBoundary()
+    }
+
+    public func saveProgram(_ values: DailyProgramSettings) throws {
+        try saveProgram(values.makeProgram())
     }
 
     public func handleSystemEvent(_ event: MacSystemEvent) {

@@ -8,6 +8,19 @@ final class DailyProgramDraftTests: XCTestCase {
         XCTAssertEqual(DailyProgramDraft.allowedDayHours, [4, 6, 8, 10])
     }
 
+    func testDraftAndRulersUseCoordinatorRulesSnapshot() {
+        let rules = SessionCoordinator.defaultDailyProgramRules
+        let draft = DailyProgramDraft(rules: rules)
+
+        XCTAssertEqual(draft.startMinutes, rules.initialStartMinutes)
+        XCTAssertEqual(draft.dayHours, rules.initialDayHours)
+        XCTAssertEqual(RulerScale.startTime(for: rules).range, rules.startMinutes.range)
+        XCTAssertEqual(RulerScale.startTime(for: rules).step, rules.startMinutes.step)
+        XCTAssertEqual(RulerScale.focus(for: rules).range, rules.focusDurationMinutes)
+        XCTAssertEqual(RulerScale.rest(for: rules).range, rules.restDurationMinutes)
+        XCTAssertEqual(RulerScale.longBreak(for: rules).range, rules.restOverrideDurationMinutes)
+    }
+
     func testInitialDayHoursAreAllowed() {
         XCTAssertTrue(DailyProgramDraft().hasAllowedDayHours)
     }

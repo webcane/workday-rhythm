@@ -13,13 +13,12 @@ public struct DailyProgram: Codable, Equatable, Sendable {
         case duplicateRestOverride(Int)
     }
 
-    public static let allowedDayHours = [4, 6, 8, 10]
     public static let initial = DailyProgram(
-        validatedStartMinutes: 540,
-        dayHours: 8,
+        validatedStartMinutes: DailyProgramRules.standard.initialStartMinutes,
+        dayHours: DailyProgramRules.standard.initialDayHours,
         defaults: [
-            WorkdayDefaults(kind: .focus, durationMinutes: 40),
-            WorkdayDefaults(kind: .rest, durationMinutes: 20),
+            WorkdayDefaults(kind: .focus, durationMinutes: DailyProgramRules.standard.initialFocusDurationMinutes),
+            WorkdayDefaults(kind: .rest, durationMinutes: DailyProgramRules.standard.initialRestDurationMinutes),
         ],
         restDurationOverrides: []
     )
@@ -35,13 +34,14 @@ public struct DailyProgram: Codable, Equatable, Sendable {
         defaults: [WorkdayDefaults],
         restDurationOverrides: [RestDurationOverride] = []
     ) throws {
-        guard (480...780).contains(startMinutes), startMinutes.isMultiple(of: 30) else {
+        let rules = DailyProgramRules.standard
+        guard rules.startMinutes.contains(startMinutes) else {
             throw ValidationError.invalidStartMinutes
         }
-        guard Self.allowedDayHours.contains(dayHours) else {
+        guard rules.allowedDayHours.contains(dayHours) else {
             throw ValidationError.invalidDayHours
         }
-        guard restDurationOverrides.count <= 2 else {
+        guard restDurationOverrides.count <= rules.maximumRestOverrides else {
             throw ValidationError.tooManyRestOverrides
         }
 
@@ -54,17 +54,17 @@ public struct DailyProgram: Codable, Equatable, Sendable {
         for kind in WorkdayIntervalKind.allCases where durations[kind] == nil {
             throw ValidationError.missingDefault(kind)
         }
-        guard let focusDuration = durations[.focus], (10...120).contains(focusDuration) else {
+        guard let focusDuration = durations[.focus], rules.durationRange(for: .focus).contains(focusDuration) else {
             throw ValidationError.invalidDuration(.focus)
         }
-        guard let restDuration = durations[.rest], (5...35).contains(restDuration) else {
+        guard let restDuration = durations[.rest], rules.durationRange(for: .rest).contains(restDuration) else {
             throw ValidationError.invalidDuration(.rest)
         }
 
         var assignedFocusNumbers = Set<Int>()
         for restOverride in restDurationOverrides {
             guard restOverride.afterFocusNumber > 0,
-                (20...240).contains(restOverride.durationMinutes)
+                rules.restOverrideDurationMinutes.contains(restOverride.durationMinutes)
             else {
                 throw ValidationError.invalidRestOverride
             }

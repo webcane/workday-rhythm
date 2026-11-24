@@ -8,6 +8,37 @@ import XCTest
 
 @MainActor
 final class SessionCoordinatorTests: XCTestCase {
+    func testRulesSnapshotDoesNotExposeProgramModelToPresentation() {
+        let coordinator = makeEnvironment().coordinator()
+
+        let rules = coordinator.dailyProgramRules
+
+        XCTAssertEqual(rules.startMinutes.range, 480...780)
+        XCTAssertEqual(rules.startMinutes.step, 30)
+        XCTAssertEqual(rules.allowedDayHours, [4, 6, 8, 10])
+        XCTAssertEqual(rules.focusDurationMinutes, 10...120)
+        XCTAssertEqual(rules.restDurationMinutes, 5...35)
+        XCTAssertEqual(rules.restOverrideDurationMinutes, 20...240)
+    }
+
+    func testSavingEditableSettingsPersistsAndAppliesProgram() throws {
+        let environment = makeEnvironment()
+        let coordinator = environment.coordinator()
+        let values = DailyProgramSettings(
+            startMinutes: 540,
+            dayHours: 8,
+            focusMinutes: 45,
+            restMinutes: 15,
+            longBreakMinutes: 60,
+            longBreakAfter: 4
+        )
+
+        try coordinator.saveProgram(values)
+
+        XCTAssertEqual(coordinator.programSettings, values)
+        XCTAssertEqual(environment.settings.loadProgram().endMinutes, 17 * 60 + 45)
+    }
+
     func testSaveAndBoundaryAreSerializedAndStaleBoundaryDoesNotDuplicateSignal() throws {
         let environment = makeEnvironment()
         var signals: [SessionSignal] = []

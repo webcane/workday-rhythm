@@ -30,9 +30,11 @@ public struct LongBreakProjection {
     }
 
     public static func options(for input: Input) throws -> [Option] {
-        guard (480...780).contains(input.startMinutes), input.startMinutes.isMultiple(of: 30),
-            [4, 6, 8, 10].contains(input.dayHours),
-            (20...240).contains(input.durationMinutes), input.otherOverrides.count <= 1,
+        let rules = DailyProgramRules.standard
+        guard rules.startMinutes.contains(input.startMinutes),
+            rules.allowedDayHours.contains(input.dayHours),
+            rules.restOverrideDurationMinutes.contains(input.durationMinutes),
+            input.otherOverrides.count < rules.maximumRestOverrides,
             input.defaults.count == WorkdayIntervalKind.allCases.count
         else { throw ValidationError.invalidParameters }
         var durations: [WorkdayIntervalKind: Int] = [:]
@@ -41,11 +43,13 @@ public struct LongBreakProjection {
                 throw ValidationError.invalidParameters
             }
         }
-        guard let focus = durations[.focus], (10...120).contains(focus),
-            let rest = durations[.rest], (5...35).contains(rest)
+        guard let focus = durations[.focus], rules.durationRange(for: .focus).contains(focus),
+            let rest = durations[.rest], rules.durationRange(for: .rest).contains(rest)
         else { throw ValidationError.invalidParameters }
         for override in input.otherOverrides {
-            guard override.afterFocusNumber > 0, (20...240).contains(override.durationMinutes) else {
+            guard override.afterFocusNumber > 0,
+                rules.restOverrideDurationMinutes.contains(override.durationMinutes)
+            else {
                 throw ValidationError.invalidParameters
             }
         }

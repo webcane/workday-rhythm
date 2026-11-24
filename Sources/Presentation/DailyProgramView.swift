@@ -6,6 +6,7 @@ struct DailyProgramView: View {
     @Binding var draft: DailyProgramDraft
     let endTime: String
     let breakOptions: LongBreakOptionsSnapshot
+    var rules = SessionCoordinator.defaultDailyProgramRules
     var notice: String?
     var isSaving = false
     var isSaveAvailable = true
@@ -32,10 +33,11 @@ struct DailyProgramView: View {
             }
             SettingsSection(title: "Рабочий день", symbol: "sun.max") {
                 VStack(alignment: .leading, spacing: DesignTokens.Space.tiny) {
-                    HorizontalRulerPicker(title: "Начало дня", scale: .startTime, value: $draft.startMinutes)
+                    HorizontalRulerPicker(
+                        title: "Начало дня", scale: .startTime(for: rules), value: $draft.startMinutes)
                     HStack(spacing: DesignTokens.Space.small) {
                         Picker("Длительность дня", selection: $draft.dayHours) {
-                            ForEach(DailyProgramDraft.allowedDayHours, id: \.self) { hours in
+                            ForEach(rules.allowedDayHours, id: \.self) { hours in
                                 Text("\(hours) ч").tag(hours)
                             }
                         }
@@ -44,7 +46,7 @@ struct DailyProgramView: View {
                         .onMoveCommand { direction in
                             if let value = movedSelection(
                                 from: draft.dayHours,
-                                in: DailyProgramDraft.allowedDayHours,
+                                in: rules.allowedDayHours,
                                 direction: direction)
                             {
                                 draft.dayHours = value
@@ -54,23 +56,24 @@ struct DailyProgramView: View {
                             .font(DesignTokens.Typography.caption)
                             .foregroundStyle(DesignTokens.Palette.textSecondary)
                     }
-                    if !draft.hasAllowedDayHours {
+                    if !draft.hasAllowedDayHours(in: rules) {
                         error(
-                            "Выберите длительность дня: \(DailyProgramDraft.allowedDayHoursDescription) часов.")
+                            "Выберите длительность дня: \(draft.allowedDayHoursDescription(in: rules)) часов.")
                     }
 
                 }
             }
             SettingsSection(title: "Фокусирование", symbol: "scope") {
-                HorizontalRulerPicker(title: "Фокусирование", scale: .focus, value: $draft.focusMinutes)
+                HorizontalRulerPicker(
+                    title: "Фокусирование", scale: .focus(for: rules), value: $draft.focusMinutes)
             }
             SettingsSection(title: "Отдых", symbol: "cup.and.saucer") {
-                HorizontalRulerPicker(title: "Отдых", scale: .rest, value: $draft.restMinutes)
+                HorizontalRulerPicker(title: "Отдых", scale: .rest(for: rules), value: $draft.restMinutes)
             }
             SettingsSection(title: "Длинные перерывы", symbol: "leaf") {
                 VStack(alignment: .leading, spacing: DesignTokens.Space.tiny) {
                     HorizontalRulerPicker(
-                        title: "Длинный перерыв", scale: .longBreak, value: $draft.longBreakMinutes)
+                        title: "Длинный перерыв", scale: .longBreak(for: rules), value: $draft.longBreakMinutes)
                     HStack(spacing: DesignTokens.Space.small) {
                         Text("Начало перерыва")
                         Menu {
@@ -114,11 +117,11 @@ struct DailyProgramView: View {
     }
 
     private var hasInvalidValues: Bool {
-        !RulerScale.startTime.contains(draft.startMinutes)
-            || !RulerScale.focus.contains(draft.focusMinutes)
-            || !RulerScale.rest.contains(draft.restMinutes)
-            || !RulerScale.longBreak.contains(draft.longBreakMinutes)
-            || !draft.hasAllowedDayHours
+        !RulerScale.startTime(for: rules).contains(draft.startMinutes)
+            || !RulerScale.focus(for: rules).contains(draft.focusMinutes)
+            || !RulerScale.rest(for: rules).contains(draft.restMinutes)
+            || !RulerScale.longBreak(for: rules).contains(draft.longBreakMinutes)
+            || !draft.hasAllowedDayHours(in: rules)
             || selectedBreakNumber == nil
     }
 
@@ -196,7 +199,7 @@ struct DailyProgramViewPreviews: PreviewProvider {
                 breakOptions: SessionCoordinator.longBreakOptions(for: DailyProgramDraft().optionsRequest), save: {},
                 cancel: {}
             )
-            .frame(width: 380, height: 1000)
+            .frame(width: 480, height: 1000)
         }
     }
 }

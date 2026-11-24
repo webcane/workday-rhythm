@@ -1,4 +1,7 @@
 import AppKit
+import MacIntegration
+import SessionCoordinator
+import SettingsStore
 import SwiftUI
 import XCTest
 
@@ -6,33 +9,37 @@ import XCTest
 
 final class SettingsWindowTests: XCTestCase {
     @MainActor
-    func testSettingsWindowHostsInteractiveFormAndPreservesCompactMinimumSize() {
+    func testSettingsWindowHostsInteractiveFormAndUsesContentHeight() {
         _ = NSApplication.shared
-        let window = AppShell.makeSettingsWindow()
+        let window = makeSettingsWindow()
 
         XCTAssertTrue(window.contentView is NSHostingView<SettingsPreviewView>)
         XCTAssertTrue(window.styleMask.contains(.resizable))
         XCTAssertEqual(window.contentMinSize.width, 720)
+        XCTAssertGreaterThan(window.frame.height, 0)
         XCTAssertFalse(window.isReleasedWhenClosed)
-        XCTAssertEqual((window.contentView as? NSHostingView<SettingsPreviewView>)?.sizingOptions, [])
+        XCTAssertEqual(
+            (window.contentView as? NSHostingView<SettingsPreviewView>)?.sizingOptions,
+            [.intrinsicContentSize]
+        )
     }
     @MainActor
     func testWindowHeightIncludingTitleBarIsLimitedToThirdOfScreen() {
         _ = NSApplication.shared
-        let window = AppShell.makeSettingsWindow()
+        let window = makeSettingsWindow()
         // 3456 × 2234 физических пикселей при Retina 2x — 1728 × 1117 pt.
         for screenHeight: CGFloat in [1117, 900, 600] {
             window.updateSizeLimits(screenFrame: NSRect(x: 0, y: 0, width: 1728, height: screenHeight))
             XCTAssertLessThanOrEqual(window.frame.height, screenHeight / 3)
             XCTAssertLessThanOrEqual(window.maxSize.height, screenHeight / 3)
-            XCTAssertEqual(window.minSize.height, window.maxSize.height, accuracy: 1)
+            XCTAssertLessThanOrEqual(window.minSize.height, window.maxSize.height)
         }
     }
 
     @MainActor
     func testSmallResizeIsRejectedEvenIfHostingResetsWindowMinimum() throws {
         _ = NSApplication.shared
-        let window = AppShell.makeSettingsWindow()
+        let window = makeSettingsWindow()
         window.updateSizeLimits(screenFrame: NSRect(x: 0, y: 0, width: 1728, height: 1050))
         let originalSize = window.frame.size
         window.contentView?.layoutSubtreeIfNeeded()
@@ -48,4 +55,18 @@ final class SettingsWindowTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(window.frame.width, 720)
     }
 
+    @MainActor
+    private func makeSettingsWindow() -> SettingsWindow {
+        AppShell.makeSettingsWindow(
+            coordinator: SessionCoordinator(settings: SettingsStore(), integration: TestMacIntegration()))
+    }
+
+}
+
+@MainActor
+private final class TestMacIntegration: MacIntegrating {
+    func startObserving(_ handler: @escaping (MacSystemEvent) -> Void) {}
+    func stopObserving() {}
+    func scheduleBoundary(after seconds: TimeInterval, handler: @escaping () -> Void) {}
+    func cancelScheduledBoundary() {}
 }

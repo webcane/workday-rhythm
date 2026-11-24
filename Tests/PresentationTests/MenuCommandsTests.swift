@@ -34,4 +34,25 @@ final class MenuCommandsTests: XCTestCase {
             XCTAssertEqual(settingsCalls, 0)
         }
     }
+
+    func testSessionCommandsCallOnlyTheirHandlers() async {
+        await MainActor.run {
+            var calls: [String] = []
+            let commands = MenuCommands(
+                showSettings: {},
+                quit: {},
+                startDay: { calls.append("start") },
+                pause: { calls.append("pause") },
+                resume: { calls.append("resume") },
+                continueAfterRest: { calls.append("continue") }
+            )
+
+            commands.perform(#selector(MenuCommands.startDay))
+            commands.perform(#selector(MenuCommands.pause))
+            commands.perform(#selector(MenuCommands.resume))
+            commands.perform(#selector(MenuCommands.continueAfterRest))
+
+            XCTAssertEqual(calls, ["start", "pause", "resume", "continue"])
+        }
+    }
 }

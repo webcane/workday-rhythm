@@ -2,14 +2,28 @@ import SessionCoordinator
 
 /// Только редактируемые значения эталонного интерфейса, без хранения и правил сессии.
 struct DailyProgramDraft: Equatable {
-    static let allowedDayHours = [4, 6, 8, 10]
-
-    var startMinutes = 540
-    var dayHours = 8
-    var focusMinutes = 40
-    var restMinutes = 20
+    var startMinutes: Int
+    var dayHours: Int
+    var focusMinutes: Int
+    var restMinutes: Int
     var longBreakMinutes = 60
     var longBreakAfter: Int? = 4
+
+    init(rules: DailyProgramRulesSnapshot = SessionCoordinator.defaultDailyProgramRules) {
+        startMinutes = rules.initialStartMinutes
+        dayHours = rules.initialDayHours
+        focusMinutes = rules.initialFocusDurationMinutes
+        restMinutes = rules.initialRestDurationMinutes
+    }
+
+    init(settings: DailyProgramSettings) {
+        startMinutes = settings.startMinutes
+        dayHours = settings.dayHours
+        focusMinutes = settings.focusMinutes
+        restMinutes = settings.restMinutes
+        longBreakMinutes = settings.longBreakMinutes
+        longBreakAfter = settings.longBreakAfter
+    }
 
     mutating func reconcileBreakSelection(with snapshot: LongBreakOptionsSnapshot) {
         guard snapshot.options.contains(where: { $0.isAvailable && $0.afterFocusNumber == longBreakAfter }) else {
@@ -33,13 +47,32 @@ struct DailyProgramDraft: Equatable {
             restMinutes: restMinutes, durationMinutes: longBreakMinutes)
     }
 
-    var hasAllowedDayHours: Bool {
-        Self.allowedDayHours.contains(dayHours)
+    var settings: DailyProgramSettings {
+        .init(
+            startMinutes: startMinutes,
+            dayHours: dayHours,
+            focusMinutes: focusMinutes,
+            restMinutes: restMinutes,
+            longBreakMinutes: longBreakMinutes,
+            longBreakAfter: longBreakAfter
+        )
     }
 
-    static var allowedDayHoursDescription: String {
-        let initialHours = allowedDayHours.dropLast().map(String.init).joined(separator: ", ")
-        guard let finalHours = allowedDayHours.last else { return "" }
+    func hasAllowedDayHours(in rules: DailyProgramRulesSnapshot) -> Bool {
+        rules.allowedDayHours.contains(dayHours)
+    }
+
+    var hasAllowedDayHours: Bool {
+        hasAllowedDayHours(in: SessionCoordinator.defaultDailyProgramRules)
+    }
+
+    static var allowedDayHours: [Int] {
+        SessionCoordinator.defaultDailyProgramRules.allowedDayHours
+    }
+
+    func allowedDayHoursDescription(in rules: DailyProgramRulesSnapshot) -> String {
+        let initialHours = rules.allowedDayHours.dropLast().map(String.init).joined(separator: ", ")
+        guard let finalHours = rules.allowedDayHours.last else { return "" }
         return "\(initialHours) или \(finalHours)"
     }
 }

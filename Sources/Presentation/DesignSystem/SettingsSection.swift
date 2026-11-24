@@ -12,7 +12,7 @@ struct SettingsSection<Content: View>: View {
     @ViewBuilder let content: () -> Content
 
     var body: some View {
-        VStack(spacing: DesignTokens.Space.tiny) {
+        VStack(spacing: DesignTokens.Space.small) {
             ViewThatFits(in: .horizontal) {
                 HStack(alignment: .top, spacing: DesignTokens.Space.small) {
                     heading.frame(width: Metrics.headingWidth, alignment: .leading)

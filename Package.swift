@@ -27,6 +27,8 @@ let package = Package(
         .testTarget(
             name: "SessionCoordinatorTests",
             dependencies: ["SessionCoordinator", "MacIntegration", "SettingsStore", "Program"]),
-        .testTarget(name: "PresentationTests", dependencies: ["Presentation"]),
+        .testTarget(
+            name: "PresentationTests",
+            dependencies: ["Presentation", "SessionCoordinator", "SettingsStore", "MacIntegration"]),
     ]
 )
