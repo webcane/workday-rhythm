@@ -136,6 +136,57 @@ final class TimerEngineTests: XCTestCase {
         XCTAssertEqual(engine.snapshot.remainingSeconds, 60 * 60)
     }
 
+    func testTimelineWithLunchAndLatePauseFinishesAtSeventeenThirtyFive() throws {
+        var engine = TimerEngine()
+        let start = time(hour: 9)
+        let program = try program(
+            overrides: [.init(afterFocusNumber: 4, durationMinutes: 60)]
+        )
+        engine.start(program: program, at: start, calendar: calendar)
+        XCTAssertEqual(engine.snapshot.dayEnd, date(hour: 17, minute: 40))
+
+        let boundaries = [
+            (focusEnd: 40, restEnd: 60),
+            (focusEnd: 100, restEnd: 120),
+            (focusEnd: 160, restEnd: 180),
+            (focusEnd: 220, restEnd: 280),
+            (focusEnd: 320, restEnd: 340),
+            (focusEnd: 380, restEnd: 400),
+            (focusEnd: 440, restEnd: 460),
+        ]
+        for (index, boundary) in boundaries.enumerated() {
+            let focusNumber = index + 1
+            XCTAssertEqual(
+                engine.advance(to: advanced(start, minutes: boundary.focusEnd), calendar: calendar),
+                [.focusCompleted(number: focusNumber)]
+            )
+            XCTAssertEqual(engine.snapshot.phase, .rest)
+            XCTAssertEqual(engine.snapshot.restNumber, focusNumber)
+            XCTAssertEqual(
+                engine.advance(to: advanced(start, minutes: boundary.restEnd), calendar: calendar),
+                [.restCompleted(number: focusNumber)]
+            )
+            XCTAssertEqual(engine.snapshot.phase, .awaitingConfirmation)
+            engine.continueAfterRest(at: advanced(start, minutes: boundary.restEnd), calendar: calendar)
+            XCTAssertEqual(engine.snapshot.phase, .focus)
+            XCTAssertEqual(engine.snapshot.focusNumber, focusNumber + 1)
+        }
+
+        engine.pause(at: time(hour: 17), calendar: calendar)
+        XCTAssertEqual(engine.snapshot.phase, .paused)
+        XCTAssertEqual(engine.snapshot.pauseCount, 1)
+        engine.resume(at: time(hour: 17, minute: 15), calendar: calendar)
+
+        let finalFocusEnd = time(hour: 17, minute: 35)
+        XCTAssertEqual(
+            engine.advance(to: finalFocusEnd, calendar: calendar),
+            [.focusCompleted(number: 8)]
+        )
+        XCTAssertEqual(engine.snapshot.phase, .finished)
+        XCTAssertEqual(engine.snapshot.focusNumber, nil)
+        XCTAssertNil(engine.snapshot.remainingSeconds)
+    }
+
     func testStartedFocusFinishesAfterEndAndSkipsRest() throws {
         var engine = TimerEngine()
         let start = time(hour: 16, minute: 20)

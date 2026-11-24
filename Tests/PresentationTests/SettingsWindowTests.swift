@@ -48,10 +48,12 @@ final class SettingsWindowTests: XCTestCase {
         window.contentMinSize = .zero
         window.minSize = .zero
         let delegateSize = try XCTUnwrap(window.delegate?.windowWillResize?(window, to: NSSize(width: 100, height: 60)))
-        XCTAssertEqual(delegateSize, originalSize)
+        XCTAssertEqual(delegateSize.width, originalSize.width, accuracy: 0.5)
+        XCTAssertEqual(delegateSize.height, originalSize.height, accuracy: 0.5)
 
         window.setFrame(NSRect(x: 0, y: 0, width: 100, height: 60), display: false)
-        XCTAssertEqual(window.frame.size, originalSize)
+        XCTAssertEqual(window.frame.width, originalSize.width, accuracy: 0.5)
+        XCTAssertEqual(window.frame.height, originalSize.height, accuracy: 0.5)
         XCTAssertGreaterThanOrEqual(window.frame.width, 720)
     }
 

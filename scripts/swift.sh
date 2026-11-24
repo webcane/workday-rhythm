@@ -17,4 +17,18 @@ if [ -z "${DEVELOPER_DIR:-}" ]; then
     esac
 fi
 
-exec /usr/bin/xcrun swift "$@"
+case "${1:-}" in
+    build|test|run)
+        command=$1
+        shift
+        cache_root="${TMPDIR:-/tmp}/workday-rhythm-swift-cache"
+        : "${CLANG_MODULE_CACHE_PATH:=$cache_root/clang}"
+        : "${SWIFTPM_MODULECACHE_OVERRIDE:=$cache_root/modules}"
+        export CLANG_MODULE_CACHE_PATH SWIFTPM_MODULECACHE_OVERRIDE
+        mkdir -p "$CLANG_MODULE_CACHE_PATH" "$SWIFTPM_MODULECACHE_OVERRIDE" "$cache_root/spm"
+        exec /usr/bin/xcrun swift "$command" --disable-sandbox --cache-path "$cache_root/spm" "$@"
+        ;;
+    *)
+        exec /usr/bin/xcrun swift "$@"
+        ;;
+esac

@@ -51,15 +51,11 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test
 
 Запуск приложения требует графического сеанса macOS. Команда `swift run` запускает процесс разработки без релизного `.app`: упаковка, подпись, установка и автозапуск не входят в каркас.
 
-Если окружение ограничивает запись в пользовательские кеши SwiftPM, используйте для каждой команды Swift:
-
-```sh
-CLANG_MODULE_CACHE_PATH=/tmp/workday-clang-cache \
-SWIFTPM_MODULECACHE_OVERRIDE=/tmp/workday-swift-cache \
-./scripts/swift.sh build --disable-sandbox --cache-path /tmp/workday-spm-cache
-```
-
-Для тестов замените `build` на `test`. Для запуска используйте `./scripts/swift.sh run --disable-sandbox --cache-path /tmp/workday-spm-cache WorkdayRhythmApp` с теми же переменными кеша. Настройка кешей и `--disable-sandbox` нужны только в ограниченном окружении агента, а не для обычного локального запуска.
+Скрипт `scripts/swift.sh`, который вызывают рецепты `just`, сам размещает кеши сборки и
+тестов во временном каталоге и отключает sandbox SwiftPM для команд `build`, `test` и `run`.
+Поэтому в ограниченном окружении достаточно обычных `just check`, `just test` и `just run`.
+При запуске Swift в обход скрипта кеши и параметры sandbox настраиваются отдельно для
+конкретного окружения; предпочтительнее использовать рецепты `just`.
 
 ## Перед завершением изменения
 
