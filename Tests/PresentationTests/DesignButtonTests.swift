@@ -1,3 +1,4 @@
+import SwiftUI
 import XCTest
 
 @testable import Presentation
@@ -7,5 +8,9 @@ final class DesignButtonTests: XCTestCase {
     func testLoadingButtonRejectsRepeatedAction() {
         XCTAssertFalse(DesignButton.shouldPerformAction(isLoading: true))
         XCTAssertTrue(DesignButton.shouldPerformAction(isLoading: false))
+    }
+
+    func testDefaultActionShortcutUsesReturnKey() {
+        XCTAssertEqual(KeyboardShortcut.defaultAction.key, .return)
     }
 }

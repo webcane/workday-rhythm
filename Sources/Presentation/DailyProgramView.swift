@@ -99,6 +99,21 @@ struct DailyProgramView: View {
                         }
                         .fixedSize()
                         .focusable()
+                        .onMoveCommand { direction in
+                            let menuDirection: MoveCommandDirection
+                            switch direction {
+                            case .up: menuDirection = .down
+                            case .down: menuDirection = .up
+                            default: menuDirection = direction
+                            }
+                            if let number = movedSelection(
+                                from: draft.longBreakAfter ?? 0,
+                                in: workNumbers,
+                                direction: menuDirection), !workNumbers.isEmpty
+                            {
+                                selectBreak(after: number)
+                            }
+                        }
                         .accessibilityLabel("Начало перерыва")
                         .accessibilityValue(breakMenuTitle)
                         .help("Номинальное время от начала дня, без фактических пауз и ожиданий подтверждения.")
@@ -120,7 +135,7 @@ struct DailyProgramView: View {
                 .disabled(isSaving)
             DesignButton(
                 title: "Сохранить изменения", role: .primary,
-                isLoading: isSaving, error: saveError, action: save
+                isLoading: isSaving, error: saveError, keyboardShortcut: .defaultAction, action: save
             )
             .disabled(!isSaveEnabled)
         }
@@ -177,6 +192,7 @@ struct DailyProgramView: View {
         in values: [Int],
         direction: MoveCommandDirection
     ) -> Int? {
+        guard !values.isEmpty else { return nil }
         let offset: Int
         switch direction {
         case .left, .down: offset = -1

@@ -11,6 +11,7 @@ struct DesignButton: View {
     var role: Role = .secondary
     var isLoading = false
     var error: String?
+    var keyboardShortcut: KeyboardShortcut?
     let action: () -> Void
 
     static func shouldPerformAction(isLoading: Bool) -> Bool {
@@ -47,6 +48,8 @@ struct DesignButton: View {
         .font(DesignTokens.Typography.body)
         .controlSize(.regular)
         .disabled(isLoading)
+        .focusable()
+        .modifier(KeyboardShortcutModifier(shortcut: keyboardShortcut))
         .accessibilityLabel(title)
         .accessibilityValue(isLoading ? "Выполняется" : "")
         .overlay {
@@ -55,6 +58,19 @@ struct DesignButton: View {
                     .stroke(DesignTokens.Palette.danger, lineWidth: 1)
                     .allowsHitTesting(false)
             }
+        }
+    }
+}
+
+private struct KeyboardShortcutModifier: ViewModifier {
+    let shortcut: KeyboardShortcut?
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if let shortcut {
+            content.keyboardShortcut(shortcut)
+        } else {
+            content
         }
     }
 }
