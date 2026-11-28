@@ -8,6 +8,55 @@ import XCTest
 
 @MainActor
 final class SessionCoordinatorTests: XCTestCase {
+    func testLongBreakOptionsAreIndependentOfSessionState() throws {
+        let environment = makeEnvironment()
+        let coordinator = environment.coordinator()
+        let saved = try program(focusMinutes: 45)
+        try coordinator.saveProgram(saved)
+        let request = LongBreakOptionsRequest(
+            startMinutes: 540, dayHours: 8, focusMinutes: 40, restMinutes: 20, durationMinutes: 60)
+
+        func checkProjection(_ coordinator: SessionCoordinator, stage: SessionStage) {
+            let status = coordinator.status
+            XCTAssertEqual(status.stage, stage)
+            let snapshot = coordinator.projectLongBreakOptions(request)
+            XCTAssertNil(snapshot.errorMessage)
+            XCTAssertEqual(Array(snapshot.options.prefix(3).map(\.startMinutes)), [580, 640, 700])
+            XCTAssertEqual(coordinator.status, status)
+            XCTAssertEqual(coordinator.program, saved)
+            XCTAssertEqual(environment.settings.loadProgram(), saved)
+        }
+
+        checkProjection(coordinator, stage: .ready)
+        coordinator.startDay()
+        checkProjection(coordinator, stage: .focus)
+        coordinator.pause()
+        checkProjection(coordinator, stage: .paused)
+        environment.time.advance(minutes: 75)
+        environment.integration.emit(.wake)
+        checkProjection(coordinator, stage: .paused)
+        coordinator.stopSession()
+        checkProjection(environment.coordinator(), stage: .ready)
+    }
+
+    func testUnavailableAndInvalidDraftsDoNotReuseSuccessfulProjection() {
+        let coordinator = makeEnvironment().coordinator()
+        let valid = coordinator.projectLongBreakOptions(
+            .init(startMinutes: 540, dayHours: 8, focusMinutes: 40, restMinutes: 20, durationMinutes: 60))
+        XCTAssertEqual(valid.options.first?.startMinutes, 580)
+        XCTAssertEqual(valid.options.first?.isAvailable, true)
+
+        let unavailable = coordinator.projectLongBreakOptions(
+            .init(startMinutes: 540, dayHours: 4, focusMinutes: 120, restMinutes: 35, durationMinutes: 20))
+        XCTAssertEqual(unavailable.options, [.init(afterFocusNumber: 1, startMinutes: 660, isAvailable: false)])
+        XCTAssertNil(unavailable.errorMessage)
+
+        let invalid = coordinator.projectLongBreakOptions(
+            .init(startMinutes: 540, dayHours: 4, focusMinutes: 0, restMinutes: 20, durationMinutes: 60))
+        XCTAssertTrue(invalid.options.isEmpty)
+        XCTAssertFalse(invalid.errorMessage?.isEmpty ?? true)
+    }
+
     func testRulesSnapshotDoesNotExposeProgramModelToPresentation() {
         let coordinator = makeEnvironment().coordinator()
 

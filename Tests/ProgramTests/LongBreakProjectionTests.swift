@@ -3,21 +3,27 @@ import XCTest
 
 final class LongBreakProjectionTests: XCTestCase {
     func testRecalculationAndMidnight() throws {
-        func project(start: Int = 540, hours: Int = 8, rest: Int = 20, focus: Int = 40)
+        func project(start: Int = 540, hours: Int = 8, rest: Int = 20, focus: Int = 40, duration: Int = 60)
             throws -> [LongBreakProjection.Option]
         {
             try LongBreakProjection.options(
                 for: .init(
                     startMinutes: start, dayHours: hours,
                     defaults: [.init(kind: .focus, durationMinutes: focus), .init(kind: .rest, durationMinutes: rest)],
-                    durationMinutes: 60))
+                    durationMinutes: duration))
         }
         XCTAssertEqual(Array(try project(focus: 45).prefix(3).map(\.startMinutes)), [585, 650, 715])
         XCTAssertEqual(Array(try project(rest: 15).prefix(3).map(\.startMinutes)), [580, 635, 690])
         XCTAssertEqual(try project(start: 570).first?.startMinutes, 610)
-        XCTAssertTrue(
-            try project(start: 780, hours: 10).filter(\.isAvailable).allSatisfy { $0.startMinutes + 60 + 40 <= 1440 })
-        XCTAssertEqual(try project(), try project())
+        let late = try project(start: 780, hours: 10, duration: 120)
+        let available = late.filter(\.isAvailable)
+        XCTAssertEqual(late.map(\.afterFocusNumber), Array(1...11))
+        XCTAssertEqual(available.map(\.afterFocusNumber), Array(1...8))
+        XCTAssertEqual(available.last?.startMinutes, 1240)
+        XCTAssertEqual(late.last?.startMinutes, 1420)
+        XCTAssertEqual(late.last?.isAvailable, false)
+        XCTAssertTrue(late.allSatisfy { $0.startMinutes < 1440 })
+        XCTAssertTrue(available.allSatisfy { $0.startMinutes + 120 + 40 <= 1440 })
     }
 
     func testNegativeDeltaAndDuplicateKinds() throws {
@@ -26,7 +32,9 @@ final class LongBreakProjectionTests: XCTestCase {
                 startMinutes: 540, dayHours: 8,
                 defaults: [.init(kind: .focus, durationMinutes: 40), .init(kind: .rest, durationMinutes: 35)],
                 durationMinutes: 20))
-        XCTAssertTrue(options.filter(\.isAvailable).allSatisfy { $0.startMinutes + 20 <= 1005 })
+        let available = options.filter(\.isAvailable)
+        XCTAssertEqual(available.map(\.afterFocusNumber), Array(1...5))
+        XCTAssertTrue(available.allSatisfy { $0.startMinutes + 20 + 40 <= 1005 })
         XCTAssertThrowsError(
             try LongBreakProjection.options(
                 for: .init(
@@ -65,6 +73,8 @@ final class LongBreakProjectionTests: XCTestCase {
         let long = try options(hours: 8)
         let short = try options(hours: 4)
         XCTAssertGreaterThan(long.count, short.count)
+        XCTAssertEqual(short.map(\.afterFocusNumber), [1, 2, 3, 4])
+        XCTAssertEqual(short.filter(\.isAvailable).map(\.afterFocusNumber), [1, 2, 3])
         XCTAssertEqual(long.first { $0.afterFocusNumber == 7 }?.isAvailable, true)
         XCTAssertNil(short.first { $0.afterFocusNumber == 7 })
         XCTAssertTrue(short.allSatisfy { $0.startMinutes < 820 })
